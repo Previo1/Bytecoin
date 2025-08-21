@@ -1,450 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ByteCoin — Auto Mining</title>
-<link rel="icon" href="coin.png" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ByteCoin Mining</title>
 <style>
-  :root{
-    --bg:#0f1724; --card:#0b1220; --accent:#f59e0b; --muted:#94a3b8; --glass: rgba(255,255,255,0.03);
+  body { font-family: Arial, sans-serif; margin:0; background:#f5f7fa; color:#222; }
+  header { background:#222; color:#ffd700; padding:15px; font-size:22px; font-weight:bold; text-align:center; }
+  .card {
+    background:#fff; margin:15px; padding:20px; border-radius:15px;
+    box-shadow:0 4px 8px rgba(0,0,0,0.1);
   }
-  *{box-sizing:border-box}
-  body{
-    margin:0; font-family:Inter, system-ui, Arial; background:linear-gradient(180deg,#071026 0%, #021223 100%); color:#e6eef8;
-    -webkit-font-smoothing:antialiased;
+  h2 { margin-top:0; color:#1976d2; }
+  #points { font-size:20px; font-weight:bold; }
+  #coins { font-size:22px; font-weight:bold; color:#10b981; }
+  footer {
+    position:fixed; bottom:0; left:0; right:0;
+    display:flex; justify-content:space-around;
+    background:#fff; border-top:1px solid #ddd; padding:10px 0;
   }
-  header.appbar{
-    display:flex; align-items:center; gap:12px; padding:16px; background:linear-gradient(90deg, rgba(255,255,255,0.03), transparent);
-    border-bottom:1px solid rgba(255,255,255,0.03);
+  footer button {
+    background:none; border:none; font-size:16px; cursor:pointer;
+    color:#1976d2; font-weight:600;
   }
-  .logo{
-    width:48px; height:48px; border-radius:50%; background:var(--glass); display:flex; align-items:center; justify-content:center;
-    box-shadow: 0 6px 18px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
-  }
-  .logo img{ width:36px; height:36px; display:block; }
-  .title { font-size:18px; font-weight:700; color:#fff; }
-  .header-meta { margin-left:auto; text-align:right; }
-  .points { font-size:14px; color:var(--accent); font-weight:700; }
-  .coins { font-size:13px; color:var(--muted); }
-
-  main{ padding:20px; max-width:900px; margin:18px auto; }
-
-  .card{
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius:14px; padding:18px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.03);
-    box-shadow: 0 6px 18px rgba(2,6,23,0.5);
-  }
-
-  /* Big coin button */
-  .mine-area { display:flex; gap:18px; align-items:center; justify-content:center; padding:12px; flex-wrap:wrap; }
-  .big-coin {
-    width:180px; height:180px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff3b0, #f59e0b 40%, #b86d02);
-    display:flex; align-items:center; justify-content:center; box-shadow: 0 12px 30px rgba(245,158,11,0.18);
-    cursor:pointer; transition: transform .12s ease;
-    border:6px solid rgba(255,255,255,0.06);
-  }
-  .big-coin:active { transform:scale(.95) rotate(-6deg); }
-  .big-coin img{ width:110px; height:110px; user-select:none; -webkit-user-drag:none; }
-
-  .status { text-align:center; }
-  .status h2 { margin:6px 0; font-size:20px; }
-  .status p { margin:0; color:var(--muted); font-size:13px; }
-
-  .progress-wrap { width:100%; margin-top:12px; }
-  .progress-bar { width:100%; height:12px; background:rgba(255,255,255,0.03); border-radius:999px; overflow:hidden; }
-  .progress-fill { height:100%; width:0%; background:linear-gradient(90deg,#f59e0b,#ffd26b); transition:width .4s ease; }
-
-  .controls { display:flex; gap:10px; justify-content:center; margin-top:12px; flex-wrap:wrap; }
-  .btn {
-    padding:8px 14px; border-radius:10px; border:0; cursor:pointer; font-weight:700;
-    background:rgba(255,255,255,0.03); color:#fff; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2);
-  }
-  .btn.primary { background: linear-gradient(90deg,#f59e0b,#ffb84d); color:#04121b; }
-  .btn.ghost { background:transparent; border:1px solid rgba(255,255,255,0.03); color:var(--muted); }
-
-  /* footer menu */
-  footer.appfooter {
-    position:fixed; left:0; right:0; bottom:0; display:flex; justify-content:space-around;
-    background: linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.6));
-    padding:10px 6px; border-top:1px solid rgba(255,255,255,0.02);
-    backdrop-filter: blur(6px);
-  }
-  footer.appfooter button { background:none; border:none; color:var(--muted); font-weight:700; cursor:pointer; }
-  footer.appfooter button.active { color:var(--accent); }
-
-  /* small lists */
-  .list { display:flex; gap:12px; flex-direction:column; }
-  .row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px dashed rgba(255,255,255,0.02); }
-  .muted{ color:var(--muted); font-size:13px; }
-
-  /* popup */
-  .overlay { position:fixed; inset:0; background:rgba(2,6,23,0.6); display:none; align-items:center; justify-content:center; z-index:60; }
-  .modal { background:linear-gradient(180deg,#061024,#08172a); padding:18px; border-radius:12px; max-width:92%; width:420px; color:#e6eef8; border:1px solid rgba(255,255,255,0.03); text-align:center;}
-  .close-x { position:absolute; right:14px; top:8px; cursor:pointer; color:var(--muted); }
-
-  @media (max-width:520px){
-    .big-coin{ width:140px; height:140px; }
-    .big-coin img{ width:86px; height:86px }
-  }
+  .page { display:none; padding-bottom:70px; }
+  .active { display:block; }
+  .share-btn { padding:10px 15px; margin:5px; border:none; border-radius:8px; cursor:pointer; font-size:16px; }
+  .tg { background:#0088cc; color:#fff; }
+  .wa { background:#25D366; color:#fff; }
+  .join-btn { display:inline-block; padding:12px 20px; background:#1976d2; color:#fff; border-radius:10px; text-decoration:none; font-weight:bold; }
 </style>
 </head>
 <body>
 
-<header class="appbar">
-  <div class="logo"><img src="coin.png" alt="bytecoin" /></div>
-  <div>
-    <div class="title">ByteCoin — Auto Mining</div>
-    <div style="font-size:12px;color:var(--muted)">Earn by keeping page open</div>
-  </div>
+<header>ByteCoin Mining — <span id="points">0</span> pts</header>
 
-  <div class="header-meta">
-    <div class="points">Points: <span id="headerPoints">0</span> pts</div>
-    <div class="coins">Coins: <span id="headerCoins">0</span> ₿</div>
-  </div>
-</header>
-
-<main>
-  <!-- HOME -->
-  <section id="page-home" class="card">
-    <div class="mine-area">
-      <div class="big-coin" id="bigCoinBtn" title="Tap to get +1 point instantly">
-        <img src="coin.png" alt="coin" />
-      </div>
-      <div style="flex:1; min-width:220px;">
-        <div class="status">
-          <h2 id="mineTitle">Auto Mining: <span id="mineState">Stopped</span></h2>
-          <p id="mineInfo" class="muted">Speed: <span id="mineSpeed">1 min/point</span> • Next point in <span id="nextTick">--:--</span></p>
-        </div>
-
-        <div class="progress-wrap">
-          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
-            <div class="muted">Points: <b id="pointsDisplay">0</b> / 100</div>
-            <div class="muted">Coins: <b id="coinsDisplay">0</b></div>
-          </div>
-          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-        </div>
-
-        <div class="controls">
-          <button class="btn primary" id="toggleMine">Start Auto-Mining</button>
-          <button class="btn ghost" id="instantTap">Instant +1</button>
-          <button class="btn" id="settingsBtn">Options</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- REFERRAL -->
-  <section id="page-referral" class="card" style="display:none">
-    <h3>Referral & Channel</h3>
-    <div class="list">
-      <div class="row">
-        <div>
-          <div style="font-weight:700">Your Referral Link</div>
-          <div class="muted">Share and get referral bonus</div>
-        </div>
-      </div>
-      <input id="refInput" style="width:100%;padding:10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:#e6eef8" readonly/>
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="btn primary" id="copyRef">Copy Link</button>
-        <button class="btn" id="openTG">Open Channel</button>
-      </div>
-      <div style="margin-top:12px" class="muted">Referral bonus: <b>100 points</b> to both (one-time).</div>
-    </div>
-  </section>
-
-  <!-- WALLET -->
-  <section id="page-wallet" class="card" style="display:none">
-    <h3>Wallet</h3>
-    <div class="row">
-      <div><div class="muted">Total Coins</div><div style="font-weight:800;font-size:18px" id="walletCoins">0</div></div>
-      <div><div class="muted">Total Points</div><div style="font-weight:800;font-size:18px" id="walletPoints">0</div></div>
-    </div>
-    <h4 style="margin-top:12px">History</h4>
-    <div id="historyBox" style="max-height:220px; overflow:auto; margin-top:6px"></div>
-  </section>
-
-  <!-- PROFILE -->
-  <section id="page-profile" class="card" style="display:none">
-    <h3>Profile</h3>
-    <div class="row">
-      <div>
-        <div class="muted">Telegram ID</div>
-        <div id="profileTelegram" style="font-weight:800">—</div>
-      </div>
-      <div>
-        <div class="muted">User ID</div>
-        <div id="profileUser" style="font-weight:800">—</div>
-      </div>
-    </div>
-    <div style="margin-top:10px" class="muted">Mining speed and extra info:</div>
-    <ul style="margin-top:8px" class="muted">
-      <li>1 minute = 1 point (when Auto-Mining ON)</li>
-      <li>100 points = 1 ByteCoin (auto-convert)</li>
-      <li>Referral gives 100 points to both (one-time)</li>
-    </ul>
-  </section>
-
-  <!-- INFO -->
-  <section id="page-info" class="card" style="display:none">
-    <h3>Info & FAQ</h3>
-    <div class="muted">Short notes</div>
-    <div style="margin-top:10px" class="muted">
-      Keep app open in foreground to let auto-miner run. Converting happens automatically when points reach 100.
-    </div>
-    <div style="margin-top:12px">
-      <button class="btn" id="comingOpt">Try Option (Coming Soon)</button>
-    </div>
-  </section>
-
-</main>
-
-<!-- Footer -->
-<footer class="appfooter">
-  <button id="menuHome" class="active">Home</button>
-  <button id="menuReferral">Referral</button>
-  <button id="menuWallet">Wallet</button>
-  <button id="menuProfile">Profile</button>
-  <button id="menuInfo">Info</button>
-</footer>
-
-<!-- POPUP -->
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <div class="close-x" id="closeX">✕</div>
-    <h3>Coming Soon</h3>
-    <p class="muted">This option is coming soon — we are building exciting features. Stay tuned!</p>
-    <div style="margin-top:12px"><button class="btn primary" id="okClose">OK</button></div>
+<div id="home" class="page active">
+  <div class="card">
+    <h2>Auto Mining</h2>
+    <p>Mining Speed: <b>1 point / minute</b></p>
+    <p>Conversion: <b>100 points = 1 ByteCoin</b></p>
+    <p>Total Supply: <b>22,000,000 ByteCoin</b></p>
+    <p id="coins">Wallet: 0 ByteCoin</p>
   </div>
 </div>
 
+<div id="referral" class="page">
+  <div class="card">
+    <h2>Referral & Earn</h2>
+    <p>Invite friends and earn <b>100 ByteCoin</b> instantly!</p>
+    <input id="refLink" style="width:100%;padding:10px" readonly />
+    <br/><br/>
+    <button class="share-btn tg" onclick="shareTelegram()">Share on Telegram</button>
+    <button class="share-btn wa" onclick="shareWhatsApp()">Share on WhatsApp</button>
+  </div>
+  <div class="card">
+    <h2>Join our Channel</h2>
+    <p>Get <b>500 ByteCoin</b> instantly for joining channel!</p>
+    <a href="https://t.me/bytecoinS22m" target="_blank" class="join-btn" onclick="claimChannelBonus()">Join Channel</a>
+  </div>
+</div>
+
+<div id="wallet" class="page">
+  <div class="card">
+    <h2>Wallet</h2>
+    <p id="coinsWallet">0 ByteCoin</p>
+    <ul id="history"></ul>
+  </div>
+</div>
+
+<div id="profile" class="page">
+  <div class="card">
+    <h2>My Profile</h2>
+    <p><b>Telegram ID:</b> <span id="userId"></span></p>
+    <p><b>Mining Speed:</b> 1 point/min</p>
+    <p><b>Extra Info:</b> Auto-Mining runs in background while app is open.</p>
+  </div>
+</div>
+
+<footer>
+  <button onclick="showPage('home')">Home</button>
+  <button onclick="showPage('referral')">Referral</button>
+  <button onclick="showPage('wallet')">Wallet</button>
+  <button onclick="showPage('profile')">Profile</button>
+</footer>
+
 <script>
-/* -----------------------
-  Storage keys & initial
--------------------------*/
-const KEY = {
-  userId: 'bc_userId',
-  tgId: 'bc_tgId',
-  points: 'bc_points',
-  coins: 'bc_coins',
-  history: 'bc_history',
-  refGiven: 'bc_refGiven' // to mark that this user already used a ref
-};
-
-function nowISO(){ return new Date().toISOString(); }
-
-/* init user */
-let userId = localStorage.getItem(KEY.userId);
-if(!userId){
-  userId = 'user_' + Math.floor(Math.random()*900000+100000);
-  localStorage.setItem(KEY.userId, userId);
-}
-document.getElementById('profileUser').innerText = userId;
-
-/* telegram id from query param (optional) */
-const params = new URLSearchParams(window.location.search);
-const tgParam = params.get('tg_id') || params.get('tgid') || params.get('telegram_id') || null;
-if(tgParam){
-  localStorage.setItem(KEY.tgId, tgParam);
-}
-const tgId = localStorage.getItem(KEY.tgId) || '—';
-document.getElementById('profileTelegram').innerText = tgId;
-
-/* points & coins */
-let points = parseInt(localStorage.getItem(KEY.points) || '0',10);
-let coins = parseInt(localStorage.getItem(KEY.coins) || '0',10);
-let history = JSON.parse(localStorage.getItem(KEY.history) || '[]');
-
-/* UI elements */
-const headerPoints = document.getElementById('headerPoints');
-const headerCoins = document.getElementById('headerCoins');
-const pointsDisplay = document.getElementById('pointsDisplay');
-const coinsDisplay = document.getElementById('coinsDisplay');
-const walletPoints = document.getElementById('walletPoints');
-const walletCoins = document.getElementById('walletCoins');
-const progressFill = document.getElementById('progressFill');
-const historyBox = document.getElementById('historyBox');
-const refInput = document.getElementById('refInput');
-
-/* mining variables */
-const POINTS_PER_COIN = 100;
-const MILLIS_PER_POINT = 60_000; // 1 minute per point
-let minerInterval = null;
-let tickCountdown = MILLIS_PER_POINT; // ms to next point
-let lastTickAt = Date.now();
-
-/* update UI */
-function renderAll(){
-  headerPoints.innerText = points;
-  headerCoins.innerText = coins;
-  pointsDisplay.innerText = points;
-  coinsDisplay.innerText = coins;
-  walletPoints.innerText = points;
-  walletCoins.innerText = coins;
-  const percent = Math.min(100, Math.floor((points / POINTS_PER_COIN) * 100));
-  progressFill.style.width = percent + '%';
-  // history
-  historyBox.innerHTML = history.slice().reverse().map(h=>{
-    return `<div style="padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.03)"><div style="font-size:13px">${h.msg}</div><div class="muted" style="font-size:12px">${h.time}</div></div>`
-  }).join('');
-  refInput.value = window.location.origin + window.location.pathname + '?ref=' + userId;
-  headerPoints.style.animation = points? 'pulse 900ms ease-in-out' : '';
-}
-function saveAll(){
-  localStorage.setItem(KEY.points, String(points));
-  localStorage.setItem(KEY.coins, String(coins));
-  localStorage.setItem(KEY.history, JSON.stringify(history));
-}
-function addHistory(msg){
-  history.push({msg, time: new Date().toLocaleString()});
-  if(history.length>200) history.shift();
-  saveAll(); renderAll();
-}
-
-/* instant tap */
-document.getElementById('instantTap').addEventListener('click', ()=>{
-  addPoint(1, 'Instant tap +1 pt');
-});
-
-/* big coin click gives +1 too */
-document.getElementById('bigCoinBtn').addEventListener('click', ()=>{
-  addPoint(1, 'Tap +1 pt');
-});
-
-/* add point and convert */
-function addPoint(n=1, reason='') {
-  points += n;
-  addHistory(`${reason} (+${n} pts)`);
-  // convert to coins automatically
-  if(points >= POINTS_PER_COIN){
-    const newCoins = Math.floor(points / POINTS_PER_COIN);
-    coins += newCoins;
-    points = points % POINTS_PER_COIN;
-    addHistory(`Converted ${newCoins*POINTS_PER_COIN} pts → ${newCoins} ₿`);
+  // User ID
+  let userId = localStorage.getItem("userId");
+  if (!userId) {
+    userId = "user_" + Math.floor(Math.random()*1000000);
+    localStorage.setItem("userId", userId);
   }
-  saveAll(); renderAll();
-}
+  document.getElementById("userId").innerText = userId;
 
-/* Auto miner start/stop */
-const toggleBtn = document.getElementById('toggleMine');
-const mineState = document.getElementById('mineState');
-const mineSpeed = document.getElementById('mineSpeed');
-const nextTickEl = document.getElementById('nextTick');
-mineSpeed.innerText = '1 min/point';
+  // Balance
+  let points = parseInt(localStorage.getItem("points") || 0);
+  let coins = parseInt(localStorage.getItem("coins") || 0);
+  let history = JSON.parse(localStorage.getItem("history") || "[]");
 
-function startMiner(){
-  if(minerInterval) return;
-  minerInterval = setInterval(()=>{
-    addPoint(1, 'Auto-mined +1 pt');
-    lastTickAt = Date.now();
-    tickCountdown = MILLIS_PER_POINT;
-  }, MILLIS_PER_POINT);
-  lastTickAt = Date.now();
-  tickCountdown = MILLIS_PER_POINT;
-  toggleBtn.innerText = 'Stop Auto-Mining';
-  mineState.innerText = 'Running';
-  addHistory('Auto-miner started');
-  renderAll();
-}
-function stopMiner(){
-  if(!minerInterval) return;
-  clearInterval(minerInterval);
-  minerInterval = null;
-  toggleBtn.innerText = 'Start Auto-Mining';
-  mineState.innerText = 'Stopped';
-  addHistory('Auto-miner stopped');
-  renderAll();
-}
-toggleBtn.addEventListener('click', ()=>{
-  if(minerInterval) stopMiner(); else startMiner();
-});
-
-/* countdown tick UI */
-setInterval(()=>{
-  if(minerInterval){
-    const elapsed = Date.now() - lastTickAt;
-    const left = Math.max(0, MILLIS_PER_POINT - elapsed);
-    tickCountdown = left;
-    // format mm:ss
-    const mm = Math.floor(left/60000);
-    const ss = Math.floor((left%60000)/1000);
-    nextTickEl.innerText = `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-  } else {
-    nextTickEl.innerText = '--:--';
+  function updateUI() {
+    document.getElementById("points").innerText = points;
+    document.getElementById("coins").innerText = "Wallet: " + coins + " ByteCoin";
+    document.getElementById("coinsWallet").innerText = coins + " ByteCoin";
+    let h = document.getElementById("history"); h.innerHTML="";
+    history.forEach(e => { let li=document.createElement("li"); li.innerText=e; h.appendChild(li); });
   }
-}, 500);
+  updateUI();
 
-/* Referral handling: if ?ref=someone */
-const urlParams = new URLSearchParams(window.location.search);
-const ref = urlParams.get('ref');
-if(ref && ref !== userId && !localStorage.getItem(KEY.refGiven)){
-  // give both 100 points (1 coin)
-  points += 100;
-  // store flag so this new user won't re-credit again
-  localStorage.setItem(KEY.refGiven, JSON.stringify({from:ref, at:nowISO()}));
-  addHistory(`Referral used from ${ref} → +100 pts`);
-  // Optionally credit referrer? We can attempt to credit using localStorage of that ref if they open, but serverless can't directly credit remote user.
-  // Instead, show a "share to referrer" instruction — but here we attempt to open a beacon (no backend) — so keep simple.
-  saveAll(); renderAll();
-  alert('Referral applied! +100 points added.');
-}
+  // Auto mining (1 point / min)
+  setInterval(() => {
+    points++;
+    if (points >= 100) {
+      let newCoins = Math.floor(points / 100);
+      coins += newCoins;
+      points = points % 100;
+      history.push(`+${newCoins} ByteCoin (Mining)`);
+      localStorage.setItem("coins", coins);
+    }
+    localStorage.setItem("points", points);
+    localStorage.setItem("history", JSON.stringify(history));
+    updateUI();
+  }, 60000); // 1 min
 
-/* copy referral */
-document.getElementById('copyRef').addEventListener('click', ()=>{
-  navigator.clipboard.writeText(refInput.value).then(()=> {
-    alert('Referral link copied');
-  }).catch(()=> alert('Copy failed'));
-});
+  // Referral link
+  const baseURL = window.location.origin;
+  const refLink = `${baseURL}?ref=${userId}`;
+  document.getElementById("refLink").value = refLink;
 
-/* open telegram channel (replace with your channel) */
-document.getElementById('openTG').addEventListener('click', ()=>{
-  const channel = 'https://t.me/your_channel_here'; // change this
-  window.open(channel, '_blank');
-});
+  // Referral auto-credit
+  const urlParams = new URLSearchParams(window.location.search);
+  const ref = urlParams.get("ref");
+  if (ref && ref !== userId && !localStorage.getItem("refGiven")) {
+    coins += 100;
+    history.push(`+100 ByteCoin (Referral Bonus from ${ref})`);
+    localStorage.setItem("coins", coins);
+    localStorage.setItem("refGiven", "true");
+    localStorage.setItem("history", JSON.stringify(history));
+    updateUI();
+    alert("You received 100 ByteCoin referral bonus!");
+  }
 
-/* menu navigation */
-function showPage(id){
-  ['page-home','page-referral','page-wallet','page-profile','page-info'].forEach(p=>{
-    document.getElementById(p).style.display = (p===id)?'block':'none';
-  });
-  // footer active
-  document.querySelectorAll('footer.appfooter button').forEach(b=>b.classList.remove('active'));
-  if(id==='page-home') document.getElementById('menuHome').classList.add('active');
-  if(id==='page-referral') document.getElementById('menuReferral').classList.add('active');
-  if(id==='page-wallet') document.getElementById('menuWallet').classList.add('active');
-  if(id==='page-profile') document.getElementById('menuProfile').classList.add('active');
-  if(id==='page-info') document.getElementById('menuInfo').classList.add('active');
-}
-document.getElementById('menuHome').addEventListener('click', ()=> showPage('page-home'));
-document.getElementById('menuReferral').addEventListener('click', ()=> showPage('page-referral'));
-document.getElementById('menuWallet').addEventListener('click', ()=> showPage('page-wallet'));
-document.getElementById('menuProfile').addEventListener('click', ()=> showPage('page-profile'));
-document.getElementById('menuInfo').addEventListener('click', ()=> showPage('page-info'));
+  // Channel join bonus
+  function claimChannelBonus() {
+    if (!localStorage.getItem("channelBonus")) {
+      coins += 500;
+      history.push(`+500 ByteCoin (Channel Join Bonus)`);
+      localStorage.setItem("coins", coins);
+      localStorage.setItem("channelBonus", "true");
+      localStorage.setItem("history", JSON.stringify(history));
+      updateUI();
+      alert("500 ByteCoin added for joining channel!");
+    }
+  }
 
-/* options popup */
-const overlay = document.getElementById('overlay');
-document.getElementById('settingsBtn').addEventListener('click', ()=> overlay.style.display='flex');
-document.getElementById('comingOpt').addEventListener('click', ()=> overlay.style.display='flex');
-document.getElementById('okClose').addEventListener('click', ()=> overlay.style.display='none');
-document.getElementById('closeX').addEventListener('click', ()=> overlay.style.display='none');
+  // Share buttons
+  function shareTelegram() {
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=🚀 Join me in ByteCoin Mining! Earn free coins!`, "_blank");
+  }
+  function shareWhatsApp() {
+    window.open(`https://wa.me/?text=🚀 Join me in ByteCoin Mining! Earn free coins! ${encodeURIComponent(refLink)}`, "_blank");
+  }
 
-/* profile and header render */
-renderAll();
-
-/* small UX: persist miner state across reload? store a flag */
-if(localStorage.getItem('bc_minerOn') === '1'){
-  startMiner();
-}
-toggleBtn.addEventListener('click', ()=> {
-  localStorage.setItem('bc_minerOn', minerInterval ? '1' : '0');
-});
-
-/* Save on unload */
-window.addEventListener('beforeunload', ()=> saveAll());
-
-/* Expose for debug (optional) */
-window.BC = { addPoint, startMiner, stopMiner, state: ()=>({points,coins}) };
-
+  function showPage(page) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(page).classList.add("active");
+  }
 </script>
+
 </body>
 </html>
