@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>ByteCoin — Auto Mining</title>
+<title>BYTE COIN — Auto Mining</title>
 <link rel="icon" href="coin.png" />
 <style>
   :root{
@@ -15,13 +15,22 @@
   header.appbar{
     display:flex; align-items:center; gap:12px; padding:14px 18px; background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
     border-bottom:1px solid rgba(255,255,255,0.02);
+    position:relative;
   }
   .logo{ width:48px; height:48px; border-radius:50%; background:var(--glass); display:flex; align-items:center; justify-content:center; }
   .logo img{ width:36px; height:36px; }
   .title{ font-size:18px; font-weight:700; color:#fff; }
   .header-meta{ margin-left:auto; text-align:right; font-size:13px; color:var(--muted); }
   .header-meta .pts{ color:var(--accent); font-weight:800; font-size:15px; }
-  main{ padding:18px; max-width:920px; margin:18px auto 96px; }
+
+  /* BIG CENTER TITLE (BYTE COIN) */
+  .big-title {
+    position:absolute; left:50%; transform:translateX(-50%); top:10px;
+    font-size:20px; font-weight:900; letter-spacing:3px; color:#ffd26b;
+    text-transform:uppercase;
+  }
+
+  main{ padding:18px; max-width:920px; margin:18px auto 120px; }
   .card{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:14px; padding:16px; margin-bottom:14px; border:1px solid rgba(255,255,255,0.03); box-shadow: 0 8px 30px rgba(2,6,23,0.6);}
   .big-coin{ width:160px; height:160px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; transition: transform .12s ease; border:6px solid rgba(255,255,255,0.04); box-shadow: 0 18px 40px rgba(5,10,20,0.6);}
   .big-coin:active{ transform:scale(0.95) rotate(-6deg); }
@@ -47,17 +56,38 @@
   .small-note{ font-size:13px; color:var(--muted); margin-top:8px; }
   .history-item{ padding:8px 0; border-bottom:1px dashed rgba(255,255,255,0.03); font-size:13px; }
   .center{ text-align:center; }
-  @media (max-width:520px){ .big-coin{ width:130px; height:130px } .big-coin img{ width:80px;height:80px } }
+
+  /* withdraw form */
+  .withdraw-row{ display:flex; gap:8px; align-items:center; margin-top:10px; }
+  .withdraw-row input{ flex:1; }
+
+  /* --- Glow pulse animation --- */
+  .pulse {
+    animation: pulseAnim 0.6s ease;
+  }
+  @keyframes pulseAnim {
+    0% { transform: scale(1); color: var(--accent); }
+    50% { transform: scale(1.2); color: #ffd26b; }
+    100% { transform: scale(1); color: var(--accent); }
+  }
+
+  @media (max-width:520px){ .big-coin{ width:130px; height:130px } .big-coin img{ width:80px;height:80px } .big-title{font-size:16px; top:8px} .header-meta{font-size:12px} .withdraw-row{flex-direction:column;align-items:stretch} }
 </style>
 </head>
 <body>
 
 <header class="appbar">
   <div class="logo"><img src="coin.png" alt="bytecoin" /></div>
-  <div>
-    <div class="title">ByteCoin — Auto Mining</div>
+
+  <!-- keep small title left -->
+  <div style="display:flex;flex-direction:column;">
+    <div class="title">Auto Mining</div>
     <div class="muted">Keep page open to mine</div>
   </div>
+
+  <!-- big uppercase title centered (overlay) -->
+  <div class="big-title">BYTE COIN</div>
+
   <div class="header-meta">
     <div>Points: <span id="headerPoints" class="pts">0</span> pts</div>
     <div>Coins: <span id="headerCoins">0</span> ₿</div>
@@ -119,7 +149,7 @@
           <button class="share-btn wa" id="shareWA">Share to WhatsApp</button>
           <button class="btn" id="copyRef">Copy</button>
         </div>
-        <div class="small-note">When a new user opens your referral link they receive +100 ₿ immediately and a claim-code is generated. Send the code to you so you can claim +100 ₿ (one-tap claim supported).</div>
+        <div class="small-note">When a new user opens your referral link they receive +100 ₿ immediately and an claim-code is generated. Send the code to you so you can claim +100 ₿ (one-tap claim supported).</div>
       </div>
 
       <div style="flex:1;min-width:240px">
@@ -152,6 +182,22 @@
         <div style="font-weight:800;font-size:20px" id="walletPoints">0</div>
       </div>
     </div>
+
+    <!-- NEW: Withdraw section -->
+    <div class="card" style="margin-top:14px;">
+      <h4>Withdraw Coins</h4>
+      <div class="muted">અહીંથી તમારા ByteCoin (સ્થાનીય ડેમો) withdraw કરો</div>
+      <div class="withdraw-row" style="margin-top:10px;">
+        <input id="withdrawAmount" class="small" type="number" min="1" placeholder="Amount (₿)" />
+        <input id="withdrawTo" class="small" type="text" placeholder="Recipient User ID" />
+      </div>
+      <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn primary" id="withdrawBtn">Withdraw</button>
+        <button class="btn" id="withdrawDemoBtn">Demo Withdraw (show)</button>
+      </div>
+      <div class="small-note">Note: This is a local/demo withdraw — real transfers need a backend & blockchain.</div>
+    </div>
+
     <h4 style="margin-top:12px">History</h4>
     <div id="historyBox" style="max-height:260px; overflow:auto; margin-top:6px"></div>
   </section>
@@ -210,6 +256,13 @@ const KEY = {
 function now(){ return new Date().toLocaleString(); }
 function randCode(){ return 'BC' + Math.random().toString(36).slice(2,9).toUpperCase(); }
 
+/* --- Pulse Animation Helper --- */
+function pulse(el){
+  if(!el) return;
+  el.classList.add('pulse');
+  setTimeout(()=> el.classList.remove('pulse'), 600);
+}
+
 /* user */
 let userId = localStorage.getItem(KEY.uid);
 if(!userId){ userId = 'user_' + Math.floor(Math.random()*900000+100000); localStorage.setItem(KEY.uid, userId); }
@@ -249,18 +302,19 @@ let lastTickAt = Date.now();
 function renderAll(){
   headerPoints.innerText = points;
   headerCoins.innerText = coins;
-  pointsDisplay.innerText = points;
-  coinsDisplay.innerText = coins;
+  pointsDisplay && (pointsDisplay.innerText = points);
+  coinsDisplay && (coinsDisplay.innerText = coins);
   walletPoints.innerText = points;
   walletCoins.innerText = coins;
   const percent = Math.min(100, Math.floor((points/POINTS_PER_COIN)*100));
-  progressFill.style.width = percent + '%';
+  progressFill && (progressFill.style.width = percent + '%');
   // history
   historyBox.innerHTML = history.slice().reverse().map(h => `<div class="history-item"><div>${h.msg}</div><div class="muted">${h.time}</div></div>`).join('');
   // referral input
-  refInput.value = window.location.origin + window.location.pathname + '?ref=' + userId;
-  // header small pulse when points change
+  refInput && (refInput.value = window.location.origin + window.location.pathname + '?ref=' + userId);
 }
+
+/* save/load */
 function saveAll(){
   localStorage.setItem(KEY.pts, String(points));
   localStorage.setItem(KEY.cns, String(coins));
@@ -273,7 +327,7 @@ function addHistory(msg){
   saveAll(); renderAll();
 }
 
-/* add point */
+/* --- addPoint with animation --- */
 function addPoint(n=1, reason=''){
   points += n;
   addHistory(`${reason} (+${n} pts)`);
@@ -283,8 +337,10 @@ function addPoint(n=1, reason=''){
     coins += g;
     points = points % POINTS_PER_COIN;
     addHistory(`Converted ${g*POINTS_PER_COIN} pts → ${g} ₿`);
+    pulse(headerCoins); // coins pulse
   }
   saveAll(); renderAll();
+  pulse(headerPoints); // points pulse
 }
 
 /* instant tap and big coin */
@@ -327,13 +383,7 @@ setInterval(()=>{
   } else nextTickEl.innerText = '--:--';
 }, 500);
 
-/* Referral flow (serverless-friendly)
-   - If URL ?ref=REFID & not used -> referee gets +100 ₿ immediately and an outgoingClaim is created (code).
-   - The outgoing claim is shown to referee to send to referrer (Telegram).
-   - Referrer can claim by:
-      a) Opening app with ?claim=CODE (one-tap auto-credit), OR
-      b) Paste code in Redeem input and press Redeem.
-*/
+/* Referral flow (serverless-friendly) */
 (function handleIncomingReferralOrClaim(){
   const params = new URLSearchParams(window.location.search);
   const ref = params.get('ref');
@@ -432,6 +482,33 @@ document.getElementById('claimChannelBtn').addEventListener('click', ()=>{
   alert('Channel bonus credited: +500 ₿');
 });
 
+/* ------------------------
+   WITHDRAW (local/demo)
+   Adds Withdraw form handling in Wallet
+-------------------------*/
+document.getElementById('withdrawBtn').addEventListener('click', ()=>{
+  const amtEl = document.getElementById('withdrawAmount');
+  const toEl = document.getElementById('withdrawTo');
+  const rawAmt = amtEl.value.trim();
+  const toId = toEl.value.trim() || 'unknown';
+  if(!rawAmt || isNaN(rawAmt) || Number(rawAmt) <= 0){ alert('Enter a valid amount'); return; }
+  const amt = Math.floor(Number(rawAmt));
+  if(amt > coins){ alert('Insufficient coins'); return; }
+  // subtract and record
+  coins -= amt;
+  addHistory(`Withdrew ${amt} ₿ to ${toId}`);
+  saveAll(); renderAll();
+  alert(`Withdrawn ${amt} ₿ to ${toId} (demo).`);
+  // clear inputs
+  amtEl.value = '';
+  toEl.value = '';
+});
+
+/* demo withdraw button to show sample (no change) */
+document.getElementById('withdrawDemoBtn').addEventListener('click', ()=>{
+  alert('Demo withdraw just shows the form — use Withdraw to perform a local demo transfer.');
+});
+
 /* wallet render on load */
 function init(){
   renderAll();
@@ -439,7 +516,9 @@ function init(){
   renderOutgoingClaim();
   // restore miner state if saved
   if(localStorage.getItem(KEY.minerOn) === '1') startMiner();
-  // default show home (fix your earlier issue)
+  // catch-up offline mining
+  catchUpMining();
+  // default show home
   showPage('page-home');
 }
 window.addEventListener('load', init);
@@ -461,8 +540,22 @@ document.getElementById('menuReferral').addEventListener('click', ()=> showPage(
 document.getElementById('menuWallet').addEventListener('click', ()=> showPage('page-wallet'));
 document.getElementById('menuProfile').addEventListener('click', ()=> showPage('page-profile'));
 
-/* save on unload */
-window.addEventListener('beforeunload', ()=> saveAll());
+/* save on unload + last tick timestamp for offline catch-up */
+function catchUpMining(){
+  const last = parseInt(localStorage.getItem('bc_lastTick') || '0', 10);
+  if(last > 0 && localStorage.getItem(KEY.minerOn) === '1'){
+    const elapsed = Date.now() - last;
+    const gained = Math.floor(elapsed / MS_PER_POINT);
+    if(gained > 0){
+      addPoint(gained, `Offline catch-up (${gained} pts)`);
+      lastTickAt = Date.now();
+    }
+  }
+}
+window.addEventListener('beforeunload', ()=> {
+  localStorage.setItem('bc_lastTick', String(Date.now()));
+  localStorage.setItem(KEY.minerOn, minerInterval ? '1' : '0');
+});
 
 /* expose for debug */
 window.BYTE = { addPoint, startMiner, stopMiner, tryRedeemCode, state: ()=>({points,coins}) };
