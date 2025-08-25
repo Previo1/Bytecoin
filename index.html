@@ -17,18 +17,19 @@
     border-bottom:1px solid rgba(255,255,255,0.02);
     position:relative;
   }
-  .logo{ width:48px; height:48px; border-radius:50%; background:var(--glass); display:flex; align-items:center; justify-content:center; }
+  .logo{ width:48px; height:48px; border-radius:12px; background:var(--glass); display:flex; align-items:center; justify-content:center; overflow:hidden }
   .logo img{ width:36px; height:36px; }
-  .title{ font-size:18px; font-weight:700; color:#fff; }
+  /* BIG CENTER TITLE (BYTE COIN) — graphical */
+  .big-title {
+    position:absolute; left:50%; transform:translateX(-50%); top:8px;
+    font-weight:900; letter-spacing:6px; text-transform:uppercase;
+    background:linear-gradient(90deg,#ffd26b 0%, #f59e0b 45%, #ffcc80 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 2px 0 rgba(0,0,0,0.2), 0 6px 22px rgba(255,193,7,0.25);
+    font-size:22px;
+  }
   .header-meta{ margin-left:auto; text-align:right; font-size:13px; color:var(--muted); }
   .header-meta .pts{ color:var(--accent); font-weight:800; font-size:15px; }
-
-  /* BIG CENTER TITLE (BYTE COIN) */
-  .big-title {
-    position:absolute; left:50%; transform:translateX(-50%); top:10px;
-    font-size:20px; font-weight:900; letter-spacing:3px; color:#ffd26b;
-    text-transform:uppercase;
-  }
 
   main{ padding:18px; max-width:920px; margin:18px auto 120px; }
   .card{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:14px; padding:16px; margin-bottom:14px; border:1px solid rgba(255,255,255,0.03); box-shadow: 0 8px 30px rgba(2,6,23,0.6);}
@@ -44,9 +45,14 @@
   .btn{ padding:8px 12px; border-radius:10px; border:0; cursor:pointer; font-weight:700; background:rgba(255,255,255,0.03); color:#fff; }
   .btn.primary{ background:linear-gradient(90deg,var(--accent),#ffb84d); color:#07121b; }
   .btn.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.03); color:var(--muted); }
+
+  /* Bottom Navigation — icon + label only */
   footer.appfooter{ position:fixed; left:0; right:0; bottom:0; display:flex; justify-content:space-around; background:linear-gradient(180deg, rgba(2,6,23,0.7), rgba(2,6,23,0.85)); padding:10px 6px; border-top:1px solid rgba(255,255,255,0.02); backdrop-filter: blur(6px);}
-  footer.appfooter button{ background:none; border:none; color:var(--muted); font-weight:700; cursor:pointer; }
-  footer.appfooter button.active{ color:var(--accent); }
+  .nav-btn{ background:none; border:none; color:var(--muted); font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; min-width:72px }
+  .nav-btn svg{ width:22px; height:22px; opacity:.9 }
+  .nav-btn.active{ color:var(--accent); }
+  .nav-btn.active svg{ filter: drop-shadow(0 0 6px rgba(245,158,11,.35)); }
+
   input.small{ width:100%; padding:10px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.03); color:#e6eef8; }
   .share-row{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
   .share-btn{ padding:10px 14px; border-radius:10px; border:0; cursor:pointer; font-weight:700; }
@@ -62,28 +68,25 @@
   .withdraw-row input{ flex:1; }
 
   /* --- Glow pulse animation --- */
-  .pulse {
-    animation: pulseAnim 0.6s ease;
-  }
+  .pulse { animation: pulseAnim 0.6s ease; }
   @keyframes pulseAnim {
     0% { transform: scale(1); color: var(--accent); }
     50% { transform: scale(1.2); color: #ffd26b; }
     100% { transform: scale(1); color: var(--accent); }
   }
 
-  @media (max-width:520px){ .big-coin{ width:130px; height:130px } .big-coin img{ width:80px;height:80px } .big-title{font-size:16px; top:8px} .header-meta{font-size:12px} .withdraw-row{flex-direction:column;align-items:stretch} }
+  @media (max-width:520px){
+    .big-coin{ width:130px; height:130px } .big-coin img{ width:80px;height:80px }
+    .big-title{font-size:18px; top:6px; letter-spacing:4px}
+    .header-meta{font-size:12px}
+    .withdraw-row{flex-direction:column;align-items:stretch}
+  }
 </style>
 </head>
 <body>
 
 <header class="appbar">
   <div class="logo"><img src="coin.png" alt="bytecoin" /></div>
-
-  <!-- keep small title left -->
-  <div style="display:flex;flex-direction:column;">
-    <div class="title">Auto Mining</div>
-    <div class="muted">Keep page open to mine</div>
-  </div>
 
   <!-- big uppercase title centered (overlay) -->
   <div class="big-title">BYTE COIN</div>
@@ -183,7 +186,7 @@
       </div>
     </div>
 
-    <!-- NEW: Withdraw section -->
+    <!-- Withdraw section -->
     <div class="card" style="margin-top:14px;">
       <h4>Withdraw Coins</h4>
       <div class="muted">અહીંથી તમારા ByteCoin (સ્થાનીય ડેમો) withdraw કરો</div>
@@ -229,11 +232,25 @@
 
 </main>
 
+<!-- BOTTOM NAV — icon + name only -->
 <footer class="appfooter">
-  <button id="menuHome" class="active">Home</button>
-  <button id="menuReferral">Referral</button>
-  <button id="menuWallet">Wallet</button>
-  <button id="menuProfile">Profile</button>
+  <button id="menuHome" class="nav-btn active" title="Home">
+    <!-- home icon -->
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 12h3v8h6v-5h2v5h6v-8h3L12 3z"/></svg>
+    <span>Home</span>
+  </button>
+  <button id="menuReferral" class="nav-btn" title="Referral">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.67 0-8 1.34-8 4v2h10v-2c0-2.66-5.33-4-8-4zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.95 1.97 3.45v2H24v-2c0-2.66-5.33-4-8-4z"/></svg>
+    <span>Referral</span>
+  </button>
+  <button id="menuWallet" class="nav-btn" title="Wallet">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 7H3V5h14l4 2zM3 19h18a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2zm13-7h4v4h-4v-4z"/></svg>
+    <span>Wallet</span>
+  </button>
+  <button id="menuProfile" class="nav-btn" title="Profile">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4 0-10 2-10 6v2h20v-2c0-4-6-6-10-6z"/></svg>
+    <span>Profile</span>
+  </button>
 </footer>
 
 <script>
@@ -484,7 +501,6 @@ document.getElementById('claimChannelBtn').addEventListener('click', ()=>{
 
 /* ------------------------
    WITHDRAW (local/demo)
-   Adds Withdraw form handling in Wallet
 -------------------------*/
 document.getElementById('withdrawBtn').addEventListener('click', ()=>{
   const amtEl = document.getElementById('withdrawAmount');
@@ -529,7 +545,7 @@ function showPage(id){
     const el = document.getElementById(p);
     if(el) el.style.display = (p === id) ? 'block' : 'none';
   });
-  document.querySelectorAll('footer.appfooter button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('footer.appfooter .nav-btn').forEach(b=>b.classList.remove('active'));
   if(id === 'page-home') document.getElementById('menuHome').classList.add('active');
   if(id === 'page-referral') document.getElementById('menuReferral').classList.add('active');
   if(id === 'page-wallet') document.getElementById('menuWallet').classList.add('active');
@@ -559,7 +575,6 @@ window.addEventListener('beforeunload', ()=> {
 
 /* expose for debug */
 window.BYTE = { addPoint, startMiner, stopMiner, tryRedeemCode, state: ()=>({points,coins}) };
-
 </script>
 </body>
 </html>
