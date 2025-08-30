@@ -139,35 +139,10 @@
 
   <!-- REFERRAL -->
   <section id="page-referral" class="card" style="display:none">
-    <h3>Referral & Channel</h3>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:240px">
-        <div style="font-weight:700">Your referal link 🖇️</div>
-        <input id="refInput" class="small" readonly style="margin-top:8px"/>
-        <div class="share-row">
-          <button class="share-btn tg" id="shareTG">Share to Telegram</button>
-          <button class="share-btn wa" id="shareWA">Share to WhatsApp</button>
-          <button class="btn" id="copyRef">Copy</button>
-        </div>
-        <div class="small-note">When a new user opens your referral link they receive +100 ₿ immediately and an claim-code is generated. Send the code to you so you can claim +100 ₿ (one-tap claim supported).</div>
-      </div>
-
-      <div style="flex:1;min-width:240px">
-        <div style="font-weight:700">Join Channel</div>
-        <div class="small-note">Click join and you'll receive <b>+500 ₿</b>. (Join must be confirmed server-side for 100% trust — here credited on click.)</div>
-        <div style="margin-top:10px;">
-          <a id="channelLink" class="join-btn" href="https://t.me/bytecoinS22m" target="_blank">Join Channel</a>
-          <div style="margin-top:8px"><button class="btn" id="claimChannelBtn">Claim Channel Bonus</button></div>
-        </div>
-
+    
         <div style="margin-top:16px;">
           <div style="font-weight:700">Redeem Claim Code</div>
-          <input id="redeemCodeInput" class="small" placeholder="Paste claim code here" style="margin-top:8px"/>
-          <div style="margin-top:8px"><button class="btn primary" id="redeemBtn">Redeem +100 ₿</button></div>
-        </div>
-      </div>
-    </div>
-  </section>
+          <input id="redeemCodeInput" class="small" placeholder="Paste claim code here" style="margi
 
   <!-- WALLET -->
   <section id="page-wallet" class="card" style="display:none">
@@ -185,23 +160,23 @@
 
     <div class="card" style="margin-top:14px;">
       <h4>Withdraw Coins</h4>
-      <div class="muted">અહીંથી તમારા ByteCoin (સ્થાનીય ડેમો) withdraw કરો</div>
+      <div class="muted">અહીંથી તમારા ByteCoin transfer કરો</div>
       <div class="withdraw-row" style="margin-top:10px;">
         <input id="withdrawAmount" class="small" type="number" min="1" placeholder="Amount (₿)" />
         <input id="withdrawTo" class="small" type="text" placeholder="Recipient User ID" />
       </div>
       <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
         <button class="btn primary" id="withdrawBtn">Withdraw</button>
-        <button class="btn" id="withdrawDemoBtn">Demo Withdraw (show)</button>
+        <button class="btn" id="withdrawDemoBtn">Withdraw (show)</button>
       </div>
-      <div class="small-note">Note: This is a local/demo withdraw — real transfers need a backend & blockchain.</div>
+      <div class="small-note">Note: This is a local withdraw — real transfer coming soon & blockchain.</div>
     </div>
 
     <h4 style="margin-top:12px">History</h4>
     <div id="historyBox" style="max-height:260px; overflow:auto; margin-top:6px"></div>
   </section>
 
-  <!-- TASKS (NEW) -->
+  <!-- TASKS  -->
   <section id="page-tasks" class="card" style="display:none">
     <h3>Mini Tasks 🎯</h3>
     <div class="small-note">Complete these simple tasks to earn extra ByteCoin. Claimed tasks cannot be claimed again (stored locally).</div>
@@ -244,7 +219,7 @@
     </div>
   </section>
 
-  <!-- PROFILE -->
+  <!-- Your PROFILE -->
   <section id="page-profile" class="card" style="display:none">
     <h3>Profile</h3>
     <div style="display:flex;gap:12px;flex-wrap:wrap;">
@@ -271,7 +246,7 @@
 
 </main>
 
-<!-- BOTTOM NAV — icon + name only (added Tasks button) -->
+<!-- BOTTOM NAV — icon + name only  -->
 <footer class="appfooter">
   <button id="menuHome" class="nav-btn active" title="Home">
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 12h3v8h6v-5h2v5h6v-8h3L12 3z"/></svg>
@@ -356,8 +331,8 @@ const historyBox = document.getElementById('historyBox');
 const refInput = document.getElementById('refInput');
 
 /* mining vars */
-const POINTS_PER_COIN = 100;
-const MS_PER_POINT = 60_000; // 1 min
+const POINTS_PER_COIN = 10;
+const MS_PER_POINT = 60_00; // 1 min
 let minerInterval = null;
 let lastTickAt = Date.now();
 
@@ -410,8 +385,8 @@ function addPoint(n=1, reason=''){
 }
 
 /* instant tap and big coin */
-document.getElementById('instantTap').addEventListener('click', ()=> addPoint(1, 'Instant tap'));
-document.getElementById('bigCoinBtn').addEventListener('click', ()=> addPoint(1, 'Tap'));
+document.getElementById('instantTap').addEventListener('click', ()=> addPoint(1, 'Instant tap here'));
+document.getElementById('bigCoinBtn').addEventListener('click', ()=> addPoint(1, 'Tap here'));
 
 /* miner start/stop */
 const toggleBtn = document.getElementById('toggleMine');
@@ -524,7 +499,7 @@ document.getElementById('copyRef').addEventListener('click', ()=>{
   navigator.clipboard.writeText(refInput.value).then(()=> alert('Referral link copied'));
 });
 
-/* share tg / wa */
+/* share telegram / WhatsApp */
 document.getElementById('shareTG').addEventListener('click', ()=>{
   const text = `Join me on ByteCoin Auto Mining! Use my referral: ${refInput.value} — get +100 ₿ instantly.`;
   const url = `https://t.me/share/url?url=${encodeURIComponent(refInput.value)}&text=${encodeURIComponent(text)}`;
@@ -548,7 +523,7 @@ document.getElementById('claimChannelBtn').addEventListener('click', ()=>{
 });
 
 /* ------------------------
-   WITHDRAW (local/demo)
+   WITHDRAW (local coming)
 -------------------------*/
 document.getElementById('withdrawBtn').addEventListener('click', ()=>{
   const amtEl = document.getElementById('withdrawAmount');
@@ -567,7 +542,7 @@ document.getElementById('withdrawBtn').addEventListener('click', ()=>{
   toEl.value = '';
 });
 
-/* demo withdraw button to show sample (no change) */
+/* demo withdraw button to show */
 document.getElementById('withdrawDemoBtn').addEventListener('click', ()=>{
   alert('Demo withdraw just shows the form — use Withdraw to perform a local demo transfer.');
 });
