@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>BYTE COIN — Auto Mining</title>
+<title>BYTE COIN — Auto Mining (With Tasks)</title>
 <link rel="icon" href="coin.png" />
 <style>
   :root{
@@ -17,18 +17,18 @@
     border-bottom:1px solid rgba(255,255,255,0.02);
     position:relative;
   }
-  .logo{ width:48px; height:48px; border-radius:50%; background:var(--glass); display:flex; align-items:center; justify-content:center; }
+  .logo{ width:48px; height:48px; border-radius:12px; background:var(--glass); display:flex; align-items:center; justify-content:center; overflow:hidden }
   .logo img{ width:36px; height:36px; }
-  .title{ font-size:18px; font-weight:700; color:#fff; }
+  .big-title {
+    position:absolute; left:50%; transform:translateX(-50%); top:8px;
+    font-weight:900; letter-spacing:6px; text-transform:uppercase;
+    background:linear-gradient(90deg,#ffd26b 0%, #f59e0b 45%, #ffcc80 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 2px 0 rgba(0,0,0,0.2), 0 6px 22px rgba(255,193,7,0.25);
+    font-size:22px;
+  }
   .header-meta{ margin-left:auto; text-align:right; font-size:13px; color:var(--muted); }
   .header-meta .pts{ color:var(--accent); font-weight:800; font-size:15px; }
-
-  /* BIG CENTER TITLE (BYTE COIN) */
-  .big-title {
-    position:absolute; left:50%; transform:translateX(-50%); top:10px;
-    font-size:20px; font-weight:900; letter-spacing:3px; color:#ffd26b;
-    text-transform:uppercase;
-  }
 
   main{ padding:18px; max-width:920px; margin:18px auto 120px; }
   .card{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:14px; padding:16px; margin-bottom:14px; border:1px solid rgba(255,255,255,0.03); box-shadow: 0 8px 30px rgba(2,6,23,0.6);}
@@ -44,9 +44,13 @@
   .btn{ padding:8px 12px; border-radius:10px; border:0; cursor:pointer; font-weight:700; background:rgba(255,255,255,0.03); color:#fff; }
   .btn.primary{ background:linear-gradient(90deg,var(--accent),#ffb84d); color:#07121b; }
   .btn.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.03); color:var(--muted); }
+
   footer.appfooter{ position:fixed; left:0; right:0; bottom:0; display:flex; justify-content:space-around; background:linear-gradient(180deg, rgba(2,6,23,0.7), rgba(2,6,23,0.85)); padding:10px 6px; border-top:1px solid rgba(255,255,255,0.02); backdrop-filter: blur(6px);}
-  footer.appfooter button{ background:none; border:none; color:var(--muted); font-weight:700; cursor:pointer; }
-  footer.appfooter button.active{ color:var(--accent); }
+  .nav-btn{ background:none; border:none; color:var(--muted); font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; min-width:72px }
+  .nav-btn svg{ width:22px; height:22px; opacity:.9 }
+  .nav-btn.active{ color:var(--accent); }
+  .nav-btn.active svg{ filter: drop-shadow(0 0 6px rgba(245,158,11,.35)); }
+
   input.small{ width:100%; padding:10px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.03); color:#e6eef8; }
   .share-row{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
   .share-btn{ padding:10px 14px; border-radius:10px; border:0; cursor:pointer; font-weight:700; }
@@ -57,37 +61,33 @@
   .history-item{ padding:8px 0; border-bottom:1px dashed rgba(255,255,255,0.03); font-size:13px; }
   .center{ text-align:center; }
 
-  /* withdraw form */
+  .task { background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02)); border-radius:12px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .task .meta { text-align:left; }
+  .task.done { opacity:0.5; }
+
   .withdraw-row{ display:flex; gap:8px; align-items:center; margin-top:10px; }
   .withdraw-row input{ flex:1; }
 
-  /* --- Glow pulse animation --- */
-  .pulse {
-    animation: pulseAnim 0.6s ease;
-  }
+  .pulse { animation: pulseAnim 0.6s ease; }
   @keyframes pulseAnim {
     0% { transform: scale(1); color: var(--accent); }
     50% { transform: scale(1.2); color: #ffd26b; }
     100% { transform: scale(1); color: var(--accent); }
   }
 
-  @media (max-width:520px){ .big-coin{ width:130px; height:130px } .big-coin img{ width:80px;height:80px } .big-title{font-size:16px; top:8px} .header-meta{font-size:12px} .withdraw-row{flex-direction:column;align-items:stretch} }
+  @media (max-width:520px){
+    .big-coin{ width:130px; height:130px } .big-coin img{ width:80px;height:80px }
+    .big-title{font-size:18px; top:6px; letter-spacing:4px}
+    .header-meta{font-size:12px}
+    .withdraw-row{flex-direction:column;align-items:stretch}
+  }
 </style>
 </head>
 <body>
 
 <header class="appbar">
   <div class="logo"><img src="coin.png" alt="bytecoin" /></div>
-
-  <!-- keep small title left -->
-  <div style="display:flex;flex-direction:column;">
-    <div class="title">Auto Mining</div>
-    <div class="muted">Keep page open to mine</div>
-  </div>
-
-  <!-- big uppercase title centered (overlay) -->
   <div class="big-title">BYTE COIN</div>
-
   <div class="header-meta">
     <div>Points: <span id="headerPoints" class="pts">0</span> pts</div>
     <div>Coins: <span id="headerCoins">0</span> ₿</div>
@@ -183,7 +183,6 @@
       </div>
     </div>
 
-    <!-- NEW: Withdraw section -->
     <div class="card" style="margin-top:14px;">
       <h4>Withdraw Coins</h4>
       <div class="muted">અહીંથી તમારા ByteCoin (સ્થાનીય ડેમો) withdraw કરો</div>
@@ -200,6 +199,49 @@
 
     <h4 style="margin-top:12px">History</h4>
     <div id="historyBox" style="max-height:260px; overflow:auto; margin-top:6px"></div>
+  </section>
+
+  <!-- TASKS (NEW) -->
+  <section id="page-tasks" class="card" style="display:none">
+    <h3>Mini Tasks 🎯</h3>
+    <div class="small-note">Complete these simple tasks to earn extra ByteCoin. Claimed tasks cannot be claimed again (stored locally).</div>
+
+    <div id="taskList" style="margin-top:12px;">
+      <div class="task" id="task-join">
+        <div class="meta">
+          <div style="font-weight:700">Join Extra Channel</div>
+          <div class="muted">Open channel link and then press Claim to get <b>+200 ₿</b> (demo click-based).</div>
+        </div>
+        <div>
+          <a href="https://t.me/bytecoinS22m" target="_blank" class="btn" style="display:block;margin-bottom:8px">Open Channel</a>
+          <button class="btn primary" onclick="claimTask('task-join',200)">Claim +200 ₿</button>
+        </div>
+      </div>
+
+      <div class="task" id="task-share">
+        <div class="meta">
+          <div style="font-weight:700">Share Referral Link with 3 Friends</div>
+          <div class="muted">Share your referral link using the share buttons and then press Claim to get <b>+300 ₿</b>. (Demo — we trust your click.)</div>
+        </div>
+        <div>
+          <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <button class="share-btn tg" id="taskShareTG">TG</button>
+            <button class="share-btn wa" id="taskShareWA">WA</button>
+          </div>
+          <button class="btn primary" onclick="claimTask('task-share',300)">Claim +300 ₿</button>
+        </div>
+      </div>
+
+      <div class="task" id="task-daily">
+        <div class="meta">
+          <div style="font-weight:700">Daily Check-in</div>
+          <div class="muted">Claim once per day for <b>+50 ₿</b>. Streaks can be added later.</div>
+        </div>
+        <div>
+          <button class="btn primary" onclick="claimDailyCheckin()">Claim +50 ₿</button>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- PROFILE -->
@@ -229,11 +271,28 @@
 
 </main>
 
+<!-- BOTTOM NAV — icon + name only (added Tasks button) -->
 <footer class="appfooter">
-  <button id="menuHome" class="active">Home</button>
-  <button id="menuReferral">Referral</button>
-  <button id="menuWallet">Wallet</button>
-  <button id="menuProfile">Profile</button>
+  <button id="menuHome" class="nav-btn active" title="Home">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 12h3v8h6v-5h2v5h6v-8h3L12 3z"/></svg>
+    <span>Home</span>
+  </button>
+  <button id="menuReferral" class="nav-btn" title="Referral">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.67 0-8 1.34-8 4v2h10v-2c0-2.66-5.33-4-8-4zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.95 1.97 3.45v2H24v-2c0-2.66-5.33-4-8-4z"/></svg>
+    <span>Referral</span>
+  </button>
+  <button id="menuWallet" class="nav-btn" title="Wallet">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 7H3V5h14l4 2zM3 19h18a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2zm13-7h4v4h-4v-4z"/></svg>
+    <span>Wallet</span>
+  </button>
+  <button id="menuTasks" class="nav-btn" title="Tasks">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>
+    <span>Tasks</span>
+  </button>
+  <button id="menuProfile" class="nav-btn" title="Profile">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4 0-10 2-10 6v2h20v-2c0-4-6-6-10-6z"/></svg>
+    <span>Profile</span>
+  </button>
 </footer>
 
 <script>
@@ -246,14 +305,17 @@ const KEY = {
   pts: 'bc_points',
   cns: 'bc_coins',
   hist: 'bc_history',
-  refUsed: 'bc_refUsed',      // marks this user used a ref
-  outgoingClaim: 'bc_outClaim', // claim object created for referee
+  refUsed: 'bc_refUsed',
+  outgoingClaim: 'bc_outClaim',
   claimedCodes: 'bc_claimedCodes',
   channelBonus: 'bc_channelBonus',
-  minerOn: 'bc_minerOn'
+  minerOn: 'bc_minerOn',
+  tasks: 'bc_tasks',            // object of task claims
+  dailyLast: 'bc_dailyLast'    // last daily check-in date
 };
 
 function now(){ return new Date().toLocaleString(); }
+function todayStr(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
 function randCode(){ return 'BC' + Math.random().toString(36).slice(2,9).toUpperCase(); }
 
 /* --- Pulse Animation Helper --- */
@@ -280,6 +342,7 @@ let points = parseInt(localStorage.getItem(KEY.pts) || '0',10);
 let coins = parseInt(localStorage.getItem(KEY.cns) || '0',10);
 let history = JSON.parse(localStorage.getItem(KEY.hist) || '[]');
 let claimedCodes = JSON.parse(localStorage.getItem(KEY.claimedCodes) || '[]');
+let tasksState = JSON.parse(localStorage.getItem(KEY.tasks) || '{}');
 
 /* ui refs */
 const headerPoints = document.getElementById('headerPoints');
@@ -312,6 +375,8 @@ function renderAll(){
   historyBox.innerHTML = history.slice().reverse().map(h => `<div class="history-item"><div>${h.msg}</div><div class="muted">${h.time}</div></div>`).join('');
   // referral input
   refInput && (refInput.value = window.location.origin + window.location.pathname + '?ref=' + userId);
+  // tasks UI
+  renderTasksUI();
 }
 
 /* save/load */
@@ -320,6 +385,7 @@ function saveAll(){
   localStorage.setItem(KEY.cns, String(coins));
   localStorage.setItem(KEY.hist, JSON.stringify(history));
   localStorage.setItem(KEY.claimedCodes, JSON.stringify(claimedCodes));
+  localStorage.setItem(KEY.tasks, JSON.stringify(tasksState));
 }
 function addHistory(msg){
   history.push({msg, time: now()});
@@ -416,7 +482,6 @@ function renderOutgoingClaim(){
   const raw = localStorage.getItem(KEY.outgoingClaim);
   if(!raw) return;
   const o = JSON.parse(raw);
-  // build UI element (if not exists)
   if(!document.getElementById('outClaimBox')){
     const box = document.createElement('div');
     box.id = 'outClaimBox';
@@ -484,7 +549,6 @@ document.getElementById('claimChannelBtn').addEventListener('click', ()=>{
 
 /* ------------------------
    WITHDRAW (local/demo)
-   Adds Withdraw form handling in Wallet
 -------------------------*/
 document.getElementById('withdrawBtn').addEventListener('click', ()=>{
   const amtEl = document.getElementById('withdrawAmount');
@@ -499,7 +563,6 @@ document.getElementById('withdrawBtn').addEventListener('click', ()=>{
   addHistory(`Withdrew ${amt} ₿ to ${toId}`);
   saveAll(); renderAll();
   alert(`Withdrawn ${amt} ₿ to ${toId} (demo).`);
-  // clear inputs
   amtEl.value = '';
   toEl.value = '';
 });
@@ -512,32 +575,30 @@ document.getElementById('withdrawDemoBtn').addEventListener('click', ()=>{
 /* wallet render on load */
 function init(){
   renderAll();
-  // show outgoing claim box if exists
   renderOutgoingClaim();
-  // restore miner state if saved
   if(localStorage.getItem(KEY.minerOn) === '1') startMiner();
-  // catch-up offline mining
   catchUpMining();
-  // default show home
   showPage('page-home');
 }
 window.addEventListener('load', init);
 
 /* simple navigation */
 function showPage(id){
-  ['page-home','page-referral','page-wallet','page-profile'].forEach(p=>{
+  ['page-home','page-referral','page-wallet','page-tasks','page-profile'].forEach(p=>{
     const el = document.getElementById(p);
     if(el) el.style.display = (p === id) ? 'block' : 'none';
   });
-  document.querySelectorAll('footer.appfooter button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('footer.appfooter .nav-btn').forEach(b=>b.classList.remove('active'));
   if(id === 'page-home') document.getElementById('menuHome').classList.add('active');
   if(id === 'page-referral') document.getElementById('menuReferral').classList.add('active');
   if(id === 'page-wallet') document.getElementById('menuWallet').classList.add('active');
+  if(id === 'page-tasks') document.getElementById('menuTasks').classList.add('active');
   if(id === 'page-profile') document.getElementById('menuProfile').classList.add('active');
 }
 document.getElementById('menuHome').addEventListener('click', ()=> showPage('page-home'));
 document.getElementById('menuReferral').addEventListener('click', ()=> showPage('page-referral'));
 document.getElementById('menuWallet').addEventListener('click', ()=> showPage('page-wallet'));
+document.getElementById('menuTasks').addEventListener('click', ()=> showPage('page-tasks'));
 document.getElementById('menuProfile').addEventListener('click', ()=> showPage('page-profile'));
 
 /* save on unload + last tick timestamp for offline catch-up */
@@ -560,6 +621,86 @@ window.addEventListener('beforeunload', ()=> {
 /* expose for debug */
 window.BYTE = { addPoint, startMiner, stopMiner, tryRedeemCode, state: ()=>({points,coins}) };
 
+/* ------------------------
+   TASKS: logic + UI
+-------------------------*/
+function renderTasksUI(){
+  // task-join, task-share, task-daily
+  const tJoin = tasksState['task-join'];
+  const tShare = tasksState['task-share'];
+  const tDaily = tasksState['task-daily'];
+
+  const elJoin = document.getElementById('task-join');
+  const elShare = document.getElementById('task-share');
+  const elDaily = document.getElementById('task-daily');
+
+  if(tJoin) elJoin.classList.add('done'); else elJoin.classList.remove('done');
+  if(tShare) elShare.classList.add('done'); else elShare.classList.remove('done');
+
+  // daily: check if already claimed today
+  const lastDaily = localStorage.getItem(KEY.dailyLast);
+  if(lastDaily === todayStr()){ elDaily.classList.add('done'); } else elDaily.classList.remove('done');
+
+  // disable buttons if done
+  Array.from(document.querySelectorAll('#taskList .task')).forEach(task=>{
+    const btn = task.querySelector('button.btn.primary');
+    if(!btn) return;
+    if(task.classList.contains('done')) btn.disabled = true; else btn.disabled = false;
+  });
+}
+
+/* Claim generic task (demo-trust model) */
+function claimTask(id, reward){
+  if(!tasksState[id]){
+    // mark claimed
+    tasksState[id] = {claimedAt: new Date().toISOString(), reward};
+    coins += reward;
+    addHistory(`Task ${id} claimed → +${reward} ₿`);
+    saveAll(); renderAll();
+    alert(`Task completed! +${reward} ₿ credited.`);
+  } else {
+    alert('આ ટાસ્ક પહેલેથી જ ક્લેઈમ થઈ ચુકી છે.');
+  }
+}
+
+/* Task share buttons (for UX) */
+document.getElementById('taskShareTG').addEventListener('click', ()=>{
+  const link = window.location.origin + window.location.pathname + '?ref=' + userId;
+  const text = `Join ByteCoin Auto Mining! Use my referral: ${link} — get +100 ₿ instantly.`;
+  window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`, '_blank');
+});
+document.getElementById('taskShareWA').addEventListener('click', ()=>{
+  const link = window.location.origin + window.location.pathname + '?ref=' + userId;
+  const text = `Join ByteCoin Auto Mining! Use my referral: ${link} — get +100 ₿ instantly.`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+});
+
+/* Daily check-in claim */
+function claimDailyCheckin(){
+  const last = localStorage.getItem(KEY.dailyLast);
+  const today = todayStr();
+  if(last === today){
+    alert('આજે તમે પહેલેથી જ ચેક-ઇનની ક્લેઇમ કરી છે.');
+    return;
+  }
+  // award
+  const reward = 50;
+  coins += reward;
+  localStorage.setItem(KEY.dailyLast, today);
+  addHistory(`Daily check-in → +${reward} ₿`);
+  saveAll(); renderAll();
+  alert(`Daily check-in claimed! +${reward} ₿`);
+}
+
+/* Restore tasks UI from localStorage on load */
+(function restoreTasksOnLoad(){
+  const raw = localStorage.getItem(KEY.tasks);
+  if(raw) {
+    try { tasksState = JSON.parse(raw); } catch(e){ tasksState = {}; }
+  } else tasksState = {};
+  // ensure UI reflects state after a small delay (after DOM ready)
+  setTimeout(()=> renderTasksUI(), 250);
+})();
 </script>
 </body>
 </html>
