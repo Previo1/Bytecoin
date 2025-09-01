@@ -1,706 +1,421 @@
 <!DOCTYPE html>
 <html lang="gu">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>BYTE COIN — Auto Mining (With Tasks)</title>
-<link rel="icon" href="coin.png" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BYTE Coin — Tap to Earn (Modern)</title>
+<link rel="icon" href="coin.png">
 <style>
-  :root{
-    --bg:#0b1220; --card:#0f1724; --accent:#f59e0b; --muted:#94a3b8; --glass: rgba(255,255,255,0.03);
-    --glass-2: rgba(255,255,255,0.02);
-  }
-  *{box-sizing:border-box}
-  body{ margin:0; font-family:Inter, system-ui, Arial; background:linear-gradient(180deg,#061021,#07162a); color:#e6eef8; -webkit-font-smoothing:antialiased;}
-  header.appbar{
-    display:flex; align-items:center; gap:12px; padding:14px 18px; background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
-    border-bottom:1px solid rgba(255,255,255,0.02);
-    position:relative;
-  }
-  .logo{ width:48px; height:48px; border-radius:12px; background:var(--glass); display:flex; align-items:center; justify-content:center; overflow:hidden }
-  .logo img{ width:36px; height:36px; }
-  .big-title {
-    position:absolute; left:50%; transform:translateX(-50%); top:8px;
-    font-weight:900; letter-spacing:6px; text-transform:uppercase;
-    background:linear-gradient(90deg,#ffd26b 0%, #f59e0b 45%, #ffcc80 100%);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    text-shadow:0 2px 0 rgba(0,0,0,0.2), 0 6px 22px rgba(255,193,7,0.25);
-    font-size:22px;
-  }
-  .header-meta{ margin-left:auto; text-align:right; font-size:13px; color:var(--muted); }
-  .header-meta .pts{ color:var(--accent); font-weight:800; font-size:15px; }
+:root{
+  --bg:#071025; --card:#0f1724; --muted:#93a4bd; --accent:#ffb020;
+  --glass: rgba(255,255,255,0.03);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(180deg,#031026 0%,#071428 100%);color:#e6eef8;min-height:100vh;display:flex;flex-direction:column;align-items:stretch}
+.app{max-width:820px;margin:0 auto;flex:1;display:flex;flex-direction:column}
+header{padding:14px 16px;text-align:center;font-weight:700;font-size:18px;background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent)}
+main{flex:1;overflow:auto;padding:16px}
+.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 12px 30px rgba(2,6,23,0.7);border:1px solid rgba(255,255,255,0.02)}
+.center{text-align:center}
+.huge-coin{
+  width:320px; height:320px; display:block; margin:18px auto; border-radius:50%;
+  cursor:pointer; transition: transform .12s ease, box-shadow .12s ease;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 0 0 rgba(255,176,32,0.0);
+}
+.huge-coin.pulse{ animation: pulse 1s infinite; box-shadow: 0 12px 40px rgba(255,176,32,0.12); }
+@keyframes pulse { 0%{ transform:scale(1) } 50%{ transform:scale(1.02) } 100%{ transform:scale(1) } }
 
-  main{ padding:18px; max-width:920px; margin:18px auto 120px; }
-  .card{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:14px; padding:16px; margin-bottom:14px; border:1px solid rgba(255,255,255,0.03); box-shadow: 0 8px 30px rgba(2,6,23,0.6);}
-  .big-coin{ width:160px; height:160px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; transition: transform .12s ease; border:6px solid rgba(255,255,255,0.04); box-shadow: 0 18px 40px rgba(5,10,20,0.6);}
-  .big-coin:active{ transform:scale(0.95) rotate(-6deg); }
-  .big-coin img{ width:100px; height:100px; user-select:none; -webkit-user-drag:none; }
-  .mine-row{ display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
-  .status h2{ margin:4px 0 6px; font-size:18px; }
-  .muted{ color:var(--muted); font-size:13px; }
-  .progress-bar{ width:100%; height:12px; background:rgba(255,255,255,0.03); border-radius:999px; overflow:hidden; margin-top:10px; }
-  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--accent),#ffd26b); transition:width .3s ease; }
-  .controls{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
-  .btn{ padding:8px 12px; border-radius:10px; border:0; cursor:pointer; font-weight:700; background:rgba(255,255,255,0.03); color:#fff; }
-  .btn.primary{ background:linear-gradient(90deg,var(--accent),#ffb84d); color:#07121b; }
-  .btn.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.03); color:var(--muted); }
-
-  footer.appfooter{ position:fixed; left:0; right:0; bottom:0; display:flex; justify-content:space-around; background:linear-gradient(180deg, rgba(2,6,23,0.7), rgba(2,6,23,0.85)); padding:10px 6px; border-top:1px solid rgba(255,255,255,0.02); backdrop-filter: blur(6px);}
-  .nav-btn{ background:none; border:none; color:var(--muted); font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; min-width:72px }
-  .nav-btn svg{ width:22px; height:22px; opacity:.9 }
-  .nav-btn.active{ color:var(--accent); }
-  .nav-btn.active svg{ filter: drop-shadow(0 0 6px rgba(245,158,11,.35)); }
-
-  input.small{ width:100%; padding:10px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.03); color:#e6eef8; }
-  .share-row{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
-  .share-btn{ padding:10px 14px; border-radius:10px; border:0; cursor:pointer; font-weight:700; }
-  .tg{ background:#0088cc; color:#fff; }
-  .wa{ background:#25D366; color:#07121b; }
-  .join-btn{ padding:10px 14px; border-radius:10px; background:#1976d2; color:#fff; border:0; font-weight:800; cursor:pointer; }
-  .small-note{ font-size:13px; color:var(--muted); margin-top:8px; }
-  .history-item{ padding:8px 0; border-bottom:1px dashed rgba(255,255,255,0.03); font-size:13px; }
-  .center{ text-align:center; }
-
-  .task { background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02)); border-radius:12px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
-  .task .meta { text-align:left; }
-  .task.done { opacity:0.5; }
-
-  .withdraw-row{ display:flex; gap:8px; align-items:center; margin-top:10px; }
-  .withdraw-row input{ flex:1; }
-
-  .pulse { animation: pulseAnim 0.6s ease; }
-  @keyframes pulseAnim {
-    0% { transform: scale(1); color: var(--accent); }
-    50% { transform: scale(1.2); color: #ffd26b; }
-    100% { transform: scale(1); color: var(--accent); }
-  }
-
-  @media (max-width:520px){
-    .big-coin{ width:130px; height:130px } .big-coin img{ width:80px;height:80px }
-    .big-title{font-size:18px; top:6px; letter-spacing:4px}
-    .header-meta{font-size:12px}
-    .withdraw-row{flex-direction:column;align-items:stretch}
-  }
+.balance{font-size:26px;font-weight:800;margin-top:8px}
+.sub{color:var(--muted);font-size:13px;margin-top:6px}
+.row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.btn{background:linear-gradient(180deg,var(--accent),#f59e0b);color:#061018;border:none;padding:12px 16px;border-radius:12px;font-weight:800;cursor:pointer}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+.small{font-size:13px;padding:8px 10px}
+.ref-box{background:rgba(255,255,255,0.02);padding:10px;border-radius:10px;word-break:break-all}
+.menu{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(0deg, rgba(2,6,23,0.95), rgba(2,6,23,0.98));display:flex;gap:0;justify-content:space-around;padding:10px 6px;border-top:1px solid rgba(255,255,255,0.02)}
+.menu button{flex:1;background:transparent;border:0;color:var(--muted);padding:6px 4px;font-weight:700;cursor:pointer;border-radius:8px;font-size:13px}
+.menu button.active{color:var(--accent);box-shadow:0 6px 18px rgba(255,176,32,0.12)}
+.kv{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.badge{padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.03)}
+.leader{max-height:200px;overflow:auto;margin-top:8px}
+.footer-note{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
+.copy{cursor:pointer;color:var(--accent);font-weight:700}
 </style>
 </head>
 <body>
-
-<header class="appbar">
-  <div class="logo"><img src="coin.png" alt="bytecoin" /></div>
-  <div class="big-title">BYTE COIN</div>
-  <div class="header-meta">
-    <div>Points: <span id="headerPoints" class="pts">0</span> pts</div>
-    <div>Coins: <span id="headerCoins">0</span> ₿</div>
-  </div>
-</header>
-
-<main>
-  <!-- HOME -->
-  <section id="page-home" class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-      <div>
-        <div class="muted">Total Supply</div>
-        <div style="font-weight:800;font-size:18px">22,000,000 ₿</div>
-      </div>
-      <div style="text-align:right">
-        <div class="muted">Referral reward (both)</div>
-        <div style="font-weight:800;font-size:18px">+100 ₿ each</div>
-      </div>
-    </div>
-
-    <div class="mine-row" style="margin-top:14px;">
-      <div class="big-coin center" id="bigCoinBtn" title="Tap to get +1 point">
-        <img src="coin.png" alt="coin">
+<div class="app">
+  <header>BYTE Coin — Community (Phase 1)</header>
+  <main id="main">
+    <!-- HOME -->
+    <section id="home" class="card center">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+        <div class="balance">Balance: <span id="balance">0</span> BYTE</div>
+        <div class="sub">Energy: <span id="energy">0</span> | Streak: <span id="streak">0</span> days</div>
       </div>
 
-      <div style="flex:1; min-width:220px;">
-        <div class="status">
-          <h2>Auto Mining: <span id="mineState">Stopped</span></h2>
-          <div class="muted">Speed: <b id="mineSpeed">1 min/point</b> • Next point in <span id="nextTick">--:--</span></div>
-        </div>
+      <img src="coin.png" id="coin" class="huge-coin pulse" alt="coin (tap)" title="Tap to mine BYTE">
 
-        <div style="margin-top:10px;">
-          <div style="display:flex;justify-content:space-between;font-size:13px;">
-            <div class="muted">Points: <b id="pointsDisplay">0</b> / 100</div>
-            <div class="muted">Coins: <b id="coinsDisplay">0</b></div>
+      <div class="row">
+        <button class="btn small" id="spinBtn">🎡 Spin</button>
+        <button class="btn small" id="boostBtn">⚡ Boost</button>
+        <button class="btn small" id="shareBtn">🔗 Share</button>
+      </div>
+
+      <div class="card" style="margin-top:12px;text-align:left">
+        <div class="kv"><div><strong>Referral & Channel</strong><div class="small">Share bot link — earn extra</div></div>
+          <div class="badge">L1 20% • L2 10% • L3 5%</div></div>
+        <div style="margin-top:10px">
+          <div class="ref-box" id="refBox"></div>
+          <div style="margin-top:10px" class="row">
+            <button class="btn small" id="copyRef">Copy Link</button>
+            <button class="btn small ghost" id="tgRef">Share to Telegram</button>
+            <button class="btn small ghost" id="waRef">Share to WhatsApp</button>
           </div>
-          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
         </div>
-
-        <div class="controls">
-          <button class="btn primary" id="toggleMine">Start Auto-Mining</button>
-          <button class="btn ghost" id="instantTap">Instant +1</button>
-          <button class="btn" id="settingsBtn">Options</button>
-        </div>
-        <div class="small-note">Tip: For continuous mining keep the tab/app open in foreground.</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- REFERRAL -->
-  <section id="page-referral" class="card" style="display:none">
-    <h3>Referral & Channel</h3>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:240px">
-        <div style="font-weight:700">Your Referral Link</div>
-        <input id="refInput" class="small" readonly style="margin-top:8px"/>
-        <div class="share-row">
-          <button class="share-btn tg" id="shareTG">Share to Telegram</button>
-          <button class="share-btn wa" id="shareWA">Share to WhatsApp</button>
-          <button class="btn" id="copyRef">Copy</button>
-        </div>
-        <div class="small-note">When a new user opens your referral link they receive +100 ₿ immediately and an claim-code is generated. Send the code to you so you can claim +100 ₿ (one-tap claim supported).</div>
-      </div>
-
-      <div style="flex:1;min-width:240px">
-        <div style="font-weight:700">Join Channel</div>
-        <div class="small-note">Click join and you'll receive <b>+500 ₿</b>. (Join must be confirmed server-side for 100% trust — here credited on click.)</div>
-        <div style="margin-top:10px;">
-          <a id="channelLink" class="join-btn" href="https://t.me/bytecoinS22m" target="_blank">Join Channel</a>
-          <div style="margin-top:8px"><button class="btn" id="claimChannelBtn">Claim Channel Bonus</button></div>
-        </div>
-
-        <div style="margin-top:16px;">
-          <div style="font-weight:700">Redeem Claim Code</div>
-          <input id="redeemCodeInput" class="small" placeholder="Paste claim code here" style="margin-top:8px"/>
-          <div style="margin-top:8px"><button class="btn primary" id="redeemBtn">Redeem +100 ₿</button></div>
+        <div style="margin-top:12px" class="row">
+          <button class="btn small" id="joinChan">Join Channel & Claim +1000 BYTE</button>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- WALLET -->
-  <section id="page-wallet" class="card" style="display:none">
-    <h3>Wallet</h3>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:180px;">
-        <div class="muted">Total Coins</div>
-        <div style="font-weight:800;font-size:20px" id="walletCoins">0</div>
+    <!-- REFERRAL -->
+    <section id="ref" class="card" style="display:none">
+      <h3>Your Referral</h3>
+      <div class="ref-box" id="myRefBox"></div>
+      <div style="margin-top:12px" class="kv"><div>Paste code (or open link):</div></div>
+      <input id="applyInput" placeholder="Enter ref code" style="width:100%;padding:10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.03);margin-top:8px;color:inherit">
+      <div class="row" style="margin-top:10px"><button class="btn small" id="applyBtn">Apply Referral</button></div>
+
+      <div style="margin-top:14px">
+        <h4>Your Referrals</h4>
+        <div id="myRefs" class="leader small-muted">No referrals yet</div>
       </div>
-      <div style="flex:1;min-width:180px;">
-        <div class="muted">Total Points</div>
-        <div style="font-weight:800;font-size:20px" id="walletPoints">0</div>
+      <div style="margin-top:14px">
+        <h4>Local Leaderboard</h4>
+        <ol id="leaderboard" class="leader"></ol>
       </div>
-    </div>
+    </section>
 
-    <div class="card" style="margin-top:14px;">
-      <h4>Withdraw Coins</h4>
-      <div class="muted">અહીંથી તમારા ByteCoin (સ્થાનીય ડેમો) withdraw કરો</div>
-      <div class="withdraw-row" style="margin-top:10px;">
-        <input id="withdrawAmount" class="small" type="number" min="1" placeholder="Amount (₿)" />
-        <input id="withdrawTo" class="small" type="text" placeholder="Recipient User ID" />
+    <!-- PROFILE -->
+    <section id="profile" class="card" style="display:none">
+      <h3>Profile</h3>
+      <div class="kv"><div>Username</div><div id="uname">—</div></div>
+      <div class="kv"><div>Balance</div><div id="uprofileBal">0</div></div>
+      <div class="kv"><div>Referral count</div><div id="urefcount">0</div></div>
+      <div style="margin-top:12px" class="row">
+        <button class="btn small" id="connectWallet">Connect Telegram Wallet</button>
+        <button class="btn small ghost" id="exportBtn">Export Data</button>
       </div>
-      <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="btn primary" id="withdrawBtn">Withdraw</button>
-        <button class="btn" id="withdrawDemoBtn">Demo Withdraw (show)</button>
-      </div>
-      <div class="small-note">Note: This is a local/demo withdraw — real transfers need a backend & blockchain.</div>
-    </div>
+      <div style="margin-top:12px" class="footer-note">Connect wallet opens official Telegram Wallet.</div>
+    </section>
 
-    <h4 style="margin-top:12px">History</h4>
-    <div id="historyBox" style="max-height:260px; overflow:auto; margin-top:6px"></div>
-  </section>
+    <!-- WHITEPAPER -->
+    <section id="white" class="card center" style="display:none">
+      <h3>White Paper</h3>
+      <p class="small-muted">Open on Telegram channel</p>
+      <div style="margin-top:12px"><a class="btn small" href="https://t.me/bytecoinS22m/6" target="_blank">Open White Paper</a></div>
+    </section>
+  </main>
 
-  <!-- TASKS (NEW) -->
-  <section id="page-tasks" class="card" style="display:none">
-    <h3>Mini Tasks 🎯</h3>
-    <div class="small-note">Complete these simple tasks to earn extra ByteCoin. Claimed tasks cannot be claimed again (stored locally).</div>
-
-    <div id="taskList" style="margin-top:12px;">
-      <div class="task" id="task-join">
-        <div class="meta">
-          <div style="font-weight:700">Join Extra Channel</div>
-          <div class="muted">Open channel link and then press Claim to get <b>+200 ₿</b> (demo click-based).</div>
-        </div>
-        <div>
-          <a href="https://t.me/bytecoinS22m" target="_blank" class="btn" style="display:block;margin-bottom:8px">Open Channel</a>
-          <button class="btn primary" onclick="claimTask('task-join',200)">Claim +200 ₿</button>
-        </div>
-      </div>
-
-      <div class="task" id="task-share">
-        <div class="meta">
-          <div style="font-weight:700">Share Referral Link with 3 Friends</div>
-          <div class="muted">Share your referral link using the share buttons and then press Claim to get <b>+300 ₿</b>. (Demo — we trust your click.)</div>
-        </div>
-        <div>
-          <div style="display:flex; gap:8px; margin-bottom:8px;">
-            <button class="share-btn tg" id="taskShareTG">TG</button>
-            <button class="share-btn wa" id="taskShareWA">WA</button>
-          </div>
-          <button class="btn primary" onclick="claimTask('task-share',300)">Claim +300 ₿</button>
-        </div>
-      </div>
-
-      <div class="task" id="task-daily">
-        <div class="meta">
-          <div style="font-weight:700">Daily Check-in</div>
-          <div class="muted">Claim once per day for <b>+50 ₿</b>. Streaks can be added later.</div>
-        </div>
-        <div>
-          <button class="btn primary" onclick="claimDailyCheckin()">Claim +50 ₿</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- PROFILE -->
-  <section id="page-profile" class="card" style="display:none">
-    <h3>Profile</h3>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:180px;">
-        <div class="muted">Telegram ID</div>
-        <div id="profileTelegram" style="font-weight:800">—</div>
-      </div>
-      <div style="flex:1;min-width:180px;">
-        <div class="muted">User ID</div>
-        <div id="profileUser" style="font-weight:800">—</div>
-      </div>
-    </div>
-
-    <div style="margin-top:12px" class="muted">
-      <div style="font-weight:700">Mining details</div>
-      <ul style="margin-top:8px">
-        <li>1 minute = 1 point (Auto-Mining when ON)</li>
-        <li>100 points = 1 ByteCoin (auto-convert)</li>
-        <li>Referral: referee +100 instantly; referrer redeems via claim code or one-tap claim link</li>
-        <li>Channel join click → +500 ByteCoin (click-based credit)</li>
-      </ul>
-    </div>
-  </section>
-
-</main>
-
-<!-- BOTTOM NAV — icon + name only (added Tasks button) -->
-<footer class="appfooter">
-  <button id="menuHome" class="nav-btn active" title="Home">
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2 12h3v8h6v-5h2v5h6v-8h3L12 3z"/></svg>
-    <span>Home</span>
-  </button>
-  <button id="menuReferral" class="nav-btn" title="Referral">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.67 0-8 1.34-8 4v2h10v-2c0-2.66-5.33-4-8-4zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.95 1.97 3.45v2H24v-2c0-2.66-5.33-4-8-4z"/></svg>
-    <span>Referral</span>
-  </button>
-  <button id="menuWallet" class="nav-btn" title="Wallet">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 7H3V5h14l4 2zM3 19h18a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2zm13-7h4v4h-4v-4z"/></svg>
-    <span>Wallet</span>
-  </button>
-  <button id="menuTasks" class="nav-btn" title="Tasks">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>
-    <span>Tasks</span>
-  </button>
-  <button id="menuProfile" class="nav-btn" title="Profile">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4 0-10 2-10 6v2h20v-2c0-4-6-6-10-6z"/></svg>
-    <span>Profile</span>
-  </button>
-</footer>
+  <nav class="menu" role="navigation">
+    <button id="nav-home" class="active" onclick="navTo('home')">🏠<div style="font-size:11px">Home</div></button>
+    <button id="nav-tap" onclick="navTo('ref')">🪙<div style="font-size:11px">Referral</div></button>
+    <button id="nav-ref" onclick="navTo('profile')">👥<div style="font-size:11px">Profile</div></button>
+    <button id="nav-prof" onclick="navTo('white')">📄<div style="font-size:11px">White</div></button>
+  </nav>
+</div>
 
 <script>
-/* ------------------------
-  Keys & init
--------------------------*/
-const KEY = {
-  uid: 'bc_userId',
-  tg: 'bc_tgId',
-  pts: 'bc_points',
-  cns: 'bc_coins',
-  hist: 'bc_history',
-  refUsed: 'bc_refUsed',
-  outgoingClaim: 'bc_outClaim',
-  claimedCodes: 'bc_claimedCodes',
-  channelBonus: 'bc_channelBonus',
-  minerOn: 'bc_minerOn',
-  tasks: 'bc_tasks',            // object of task claims
-  dailyLast: 'bc_dailyLast'    // last daily check-in date
+/* ---------------------------
+   App State (localStorage)
+   --------------------------- */
+const APP_KEY = "byte_v3_state";
+const LB_KEY = "byte_v3_leaderboard";
+
+let state = JSON.parse(localStorage.getItem(APP_KEY)) || {
+  username: "USER" + Math.floor(Math.random()*90000+10000),
+  balance: 0,
+  energy: 500,
+  lastReset: null,
+  streak: 0,
+  lastLogin: null,
+  refBy: null,
+  referrals: [], // {code, date}
+  spins: [],
+  joinedChannel: false,
+  boostUntil: null
 };
 
-function now(){ return new Date().toLocaleString(); }
-function todayStr(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
-function randCode(){ return 'BC' + Math.random().toString(36).slice(2,9).toUpperCase(); }
+function saveState(){ localStorage.setItem(APP_KEY, JSON.stringify(state)); }
 
-/* --- Pulse Animation Helper --- */
-function pulse(el){
-  if(!el) return;
-  el.classList.add('pulse');
-  setTimeout(()=> el.classList.remove('pulse'), 600);
-}
-
-/* user */
-let userId = localStorage.getItem(KEY.uid);
-if(!userId){ userId = 'user_' + Math.floor(Math.random()*900000+100000); localStorage.setItem(KEY.uid, userId); }
-document.getElementById('profileUser').innerText = userId;
-
-/* optional telegram id from query */
-const params = new URLSearchParams(window.location.search);
-const tgParam = params.get('tg_id') || params.get('tgid') || params.get('telegram_id') || null;
-if(tgParam) localStorage.setItem(KEY.tg, tgParam);
-const tgId = localStorage.getItem(KEY.tg) || '—';
-document.getElementById('profileTelegram').innerText = tgId;
-
-/* points/coins/history */
-let points = parseInt(localStorage.getItem(KEY.pts) || '0',10);
-let coins = parseInt(localStorage.getItem(KEY.cns) || '0',10);
-let history = JSON.parse(localStorage.getItem(KEY.hist) || '[]');
-let claimedCodes = JSON.parse(localStorage.getItem(KEY.claimedCodes) || '[]');
-let tasksState = JSON.parse(localStorage.getItem(KEY.tasks) || '{}');
-
-/* ui refs */
-const headerPoints = document.getElementById('headerPoints');
-const headerCoins = document.getElementById('headerCoins');
-const pointsDisplay = document.getElementById('pointsDisplay');
-const coinsDisplay = document.getElementById('coinsDisplay');
-const walletPoints = document.getElementById('walletPoints');
-const walletCoins = document.getElementById('walletCoins');
-const progressFill = document.getElementById('progressFill');
-const historyBox = document.getElementById('historyBox');
-const refInput = document.getElementById('refInput');
-
-/* mining vars */
-const POINTS_PER_COIN = 100;
-const MS_PER_POINT = 60_000; // 1 min
-let minerInterval = null;
-let lastTickAt = Date.now();
-
-/* render */
-function renderAll(){
-  headerPoints.innerText = points;
-  headerCoins.innerText = coins;
-  pointsDisplay && (pointsDisplay.innerText = points);
-  coinsDisplay && (coinsDisplay.innerText = coins);
-  walletPoints.innerText = points;
-  walletCoins.innerText = coins;
-  const percent = Math.min(100, Math.floor((points/POINTS_PER_COIN)*100));
-  progressFill && (progressFill.style.width = percent + '%');
-  // history
-  historyBox.innerHTML = history.slice().reverse().map(h => `<div class="history-item"><div>${h.msg}</div><div class="muted">${h.time}</div></div>`).join('');
-  // referral input
-  refInput && (refInput.value = window.location.origin + window.location.pathname + '?ref=' + userId);
-  // tasks UI
-  renderTasksUI();
-}
-
-/* save/load */
-function saveAll(){
-  localStorage.setItem(KEY.pts, String(points));
-  localStorage.setItem(KEY.cns, String(coins));
-  localStorage.setItem(KEY.hist, JSON.stringify(history));
-  localStorage.setItem(KEY.claimedCodes, JSON.stringify(claimedCodes));
-  localStorage.setItem(KEY.tasks, JSON.stringify(tasksState));
-}
-function addHistory(msg){
-  history.push({msg, time: now()});
-  if(history.length>300) history.shift();
-  saveAll(); renderAll();
-}
-
-/* --- addPoint with animation --- */
-function addPoint(n=1, reason=''){
-  points += n;
-  addHistory(`${reason} (+${n} pts)`);
-  // convert
-  if(points >= POINTS_PER_COIN){
-    const g = Math.floor(points / POINTS_PER_COIN);
-    coins += g;
-    points = points % POINTS_PER_COIN;
-    addHistory(`Converted ${g*POINTS_PER_COIN} pts → ${g} ₿`);
-    pulse(headerCoins); // coins pulse
-  }
-  saveAll(); renderAll();
-  pulse(headerPoints); // points pulse
-}
-
-/* instant tap and big coin */
-document.getElementById('instantTap').addEventListener('click', ()=> addPoint(1, 'Instant tap'));
-document.getElementById('bigCoinBtn').addEventListener('click', ()=> addPoint(1, 'Tap'));
-
-/* miner start/stop */
-const toggleBtn = document.getElementById('toggleMine');
-const mineStateEl = document.getElementById('mineState');
-const nextTickEl = document.getElementById('nextTick');
-document.getElementById('mineSpeed').innerText = '1 min/point';
-
-function startMiner(){
-  if(minerInterval) return;
-  minerInterval = setInterval(()=> { addPoint(1, 'Auto-mined'); lastTickAt = Date.now(); }, MS_PER_POINT);
-  lastTickAt = Date.now();
-  toggleBtn.innerText = 'Stop Auto-Mining';
-  mineStateEl.innerText = 'Running';
-  localStorage.setItem(KEY.minerOn, '1');
-  addHistory('Auto-miner started');
-}
-function stopMiner(){
-  if(!minerInterval) return;
-  clearInterval(minerInterval);
-  minerInterval = null;
-  toggleBtn.innerText = 'Start Auto-Mining';
-  mineStateEl.innerText = 'Stopped';
-  localStorage.setItem(KEY.minerOn, '0');
-  addHistory('Auto-miner stopped');
-}
-toggleBtn.addEventListener('click', ()=> { if(minerInterval) stopMiner(); else startMiner(); });
-
-/* tick UI */
-setInterval(()=>{
-  if(minerInterval){
-    const elapsed = Date.now() - lastTickAt;
-    const left = Math.max(0, MS_PER_POINT - elapsed);
-    const mm = Math.floor(left/60000); const ss = Math.floor((left%60000)/1000);
-    nextTickEl.innerText = `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-  } else nextTickEl.innerText = '--:--';
-}, 500);
-
-/* Referral flow (serverless-friendly) */
-(function handleIncomingReferralOrClaim(){
-  const params = new URLSearchParams(window.location.search);
-  const ref = params.get('ref');
-  const claim = params.get('claim');
-
-  if(ref && ref !== userId && !localStorage.getItem(KEY.refUsed)){
-    // Give referee +100 coins immediately (big viral incentive)
-    coins += 100;
-    addHistory(`Referral bonus: +100 ₿ (as referee of ${ref})`);
-    // create outgoing claim code for referrer
-    const code = randCode();
-    const out = { code, from: userId, to: ref, at: new Date().toISOString() };
-    localStorage.setItem(KEY.outgoingClaim, JSON.stringify(out));
-    localStorage.setItem(KEY.refUsed, JSON.stringify({from:ref, at: new Date().toISOString()}));
-    saveAll(); renderAll();
-    // show claim info visually
-    alert(`Referral applied! You received +100 ₿.\nSend this Claim Code to your referrer so they can claim theirs:\n\n${code}`);
-    // append claim box to referral page (if user stays)
-    setTimeout(()=> renderOutgoingClaim(), 300);
-  }
-
-  // If someone opens with ?claim=CODE we auto-redeem for them
-  if(claim){
-    tryRedeemCode(claim);
-  }
-})();
-
-/* render outgoing claim box */
-function renderOutgoingClaim(){
-  const raw = localStorage.getItem(KEY.outgoingClaim);
-  if(!raw) return;
-  const o = JSON.parse(raw);
-  if(!document.getElementById('outClaimBox')){
-    const box = document.createElement('div');
-    box.id = 'outClaimBox';
-    box.style.marginTop = '12px';
-    box.innerHTML = `<div style="font-weight:700">Your Claim Code</div>
-      <div class="muted">Send this code to the person who referred you on Telegram</div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <input id="outClaimInput" class="small" value="${o.code}" readonly/>
-        <button class="btn" id="copyOutClaim">Copy</button>
-      </div>`;
-    document.getElementById('page-referral').appendChild(box);
-    document.getElementById('copyOutClaim').addEventListener('click', ()=> {
-      navigator.clipboard.writeText(o.code).then(()=> alert('Claim code copied'));
-    });
-  }
-}
-
-/* Redeem code for referrer */
-function tryRedeemCode(code){
-  if(!code) { alert('Enter a valid claim code'); return; }
-  code = String(code).trim().toUpperCase();
-  // prevent reuse
-  if(claimedCodes.includes(code)){ alert('This code is already redeemed'); return; }
-  // Validate: serverless — we cannot verify remote; we accept and credit.
-  coins += 100;
-  claimedCodes.push(code);
-  addHistory(`Redeemed claim code ${code} → +100 ₿`);
-  saveAll(); renderAll();
-  alert('+100 ₿ credited to your account.');
-}
-
-/* redeem button */
-document.getElementById('redeemBtn').addEventListener('click', ()=>{
-  const c = document.getElementById('redeemCodeInput').value;
-  tryRedeemCode(c);
-});
-
-/* copy referral */
-document.getElementById('copyRef').addEventListener('click', ()=>{
-  navigator.clipboard.writeText(refInput.value).then(()=> alert('Referral link copied'));
-});
-
-/* share tg / wa */
-document.getElementById('shareTG').addEventListener('click', ()=>{
-  const text = `Join me on ByteCoin Auto Mining! Use my referral: ${refInput.value} — get +100 ₿ instantly.`;
-  const url = `https://t.me/share/url?url=${encodeURIComponent(refInput.value)}&text=${encodeURIComponent(text)}`;
-  window.open(url, '_blank');
-});
-document.getElementById('shareWA').addEventListener('click', ()=>{
-  const text = `Join me on ByteCoin Auto Mining! Use my referral: ${refInput.value} — get +100 ₿ instantly.`;
-  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-  window.open(url, '_blank');
-});
-
-/* Channel join claim (click-based) */
-document.getElementById('claimChannelBtn').addEventListener('click', ()=>{
-  if(localStorage.getItem(KEY.channelBonus) === '1'){ alert('Channel bonus already claimed'); return; }
-  // click-based credit
-  coins += 500;
-  localStorage.setItem(KEY.channelBonus, '1');
-  addHistory('+500 ByteCoin (Channel Join Bonus)');
-  saveAll(); renderAll();
-  alert('Channel bonus credited: +500 ₿');
-});
-
-/* ------------------------
-   WITHDRAW (local/demo)
--------------------------*/
-document.getElementById('withdrawBtn').addEventListener('click', ()=>{
-  const amtEl = document.getElementById('withdrawAmount');
-  const toEl = document.getElementById('withdrawTo');
-  const rawAmt = amtEl.value.trim();
-  const toId = toEl.value.trim() || 'unknown';
-  if(!rawAmt || isNaN(rawAmt) || Number(rawAmt) <= 0){ alert('Enter a valid amount'); return; }
-  const amt = Math.floor(Number(rawAmt));
-  if(amt > coins){ alert('Insufficient coins'); return; }
-  // subtract and record
-  coins -= amt;
-  addHistory(`Withdrew ${amt} ₿ to ${toId}`);
-  saveAll(); renderAll();
-  alert(`Withdrawn ${amt} ₿ to ${toId} (demo).`);
-  amtEl.value = '';
-  toEl.value = '';
-});
-
-/* demo withdraw button to show sample (no change) */
-document.getElementById('withdrawDemoBtn').addEventListener('click', ()=>{
-  alert('Demo withdraw just shows the form — use Withdraw to perform a local demo transfer.');
-});
-
-/* wallet render on load */
+/* ---------------------------
+   Init daily reset + UI init
+   --------------------------- */
 function init(){
+  // Reset energy daily
+  const today = new Date().toDateString();
+  if(state.lastReset !== today){
+    state.energy = 500;
+    state.lastReset = today;
+  }
+  // Streak calc
+  if(state.lastLogin){
+    const last = new Date(state.lastLogin).toDateString();
+    const yesterday = new Date(Date.now() - 24*3600*1000).toDateString();
+    if(last === yesterday) state.streak = (state.streak || 0) + 1;
+    else if(last !== today) state.streak = 1;
+  } else state.streak = 1;
+  state.lastLogin = Date.now();
+  saveState();
   renderAll();
-  renderOutgoingClaim();
-  if(localStorage.getItem(KEY.minerOn) === '1') startMiner();
-  catchUpMining();
-  showPage('page-home');
+  processUrlRef();
+  registerLocalUser();
 }
-window.addEventListener('load', init);
 
-/* simple navigation */
-function showPage(id){
-  ['page-home','page-referral','page-wallet','page-tasks','page-profile'].forEach(p=>{
-    const el = document.getElementById(p);
-    if(el) el.style.display = (p === id) ? 'block' : 'none';
-  });
-  document.querySelectorAll('footer.appfooter .nav-btn').forEach(b=>b.classList.remove('active'));
-  if(id === 'page-home') document.getElementById('menuHome').classList.add('active');
-  if(id === 'page-referral') document.getElementById('menuReferral').classList.add('active');
-  if(id === 'page-wallet') document.getElementById('menuWallet').classList.add('active');
-  if(id === 'page-tasks') document.getElementById('menuTasks').classList.add('active');
-  if(id === 'page-profile') document.getElementById('menuProfile').classList.add('active');
-}
-document.getElementById('menuHome').addEventListener('click', ()=> showPage('page-home'));
-document.getElementById('menuReferral').addEventListener('click', ()=> showPage('page-referral'));
-document.getElementById('menuWallet').addEventListener('click', ()=> showPage('page-wallet'));
-document.getElementById('menuTasks').addEventListener('click', ()=> showPage('page-tasks'));
-document.getElementById('menuProfile').addEventListener('click', ()=> showPage('page-profile'));
-
-/* save on unload + last tick timestamp for offline catch-up */
-function catchUpMining(){
-  const last = parseInt(localStorage.getItem('bc_lastTick') || '0', 10);
-  if(last > 0 && localStorage.getItem(KEY.minerOn) === '1'){
-    const elapsed = Date.now() - last;
-    const gained = Math.floor(elapsed / MS_PER_POINT);
-    if(gained > 0){
-      addPoint(gained, `Offline catch-up (${gained} pts)`);
-      lastTickAt = Date.now();
-    }
+/* ---------------------------
+   Helper: local user ledger
+   --------------------------- */
+function ensureUserRec(u){
+  const key = APP_KEY + "_" + u;
+  if(!localStorage.getItem(key)){
+    localStorage.setItem(key, JSON.stringify({username:u, balance:0, refBy:null, referrals:[], lastSeen:Date.now()}));
   }
 }
-window.addEventListener('beforeunload', ()=> {
-  localStorage.setItem('bc_lastTick', String(Date.now()));
-  localStorage.setItem(KEY.minerOn, minerInterval ? '1' : '0');
-});
-
-/* expose for debug */
-window.BYTE = { addPoint, startMiner, stopMiner, tryRedeemCode, state: ()=>({points,coins}) };
-
-/* ------------------------
-   TASKS: logic + UI
--------------------------*/
-function renderTasksUI(){
-  // task-join, task-share, task-daily
-  const tJoin = tasksState['task-join'];
-  const tShare = tasksState['task-share'];
-  const tDaily = tasksState['task-daily'];
-
-  const elJoin = document.getElementById('task-join');
-  const elShare = document.getElementById('task-share');
-  const elDaily = document.getElementById('task-daily');
-
-  if(tJoin) elJoin.classList.add('done'); else elJoin.classList.remove('done');
-  if(tShare) elShare.classList.add('done'); else elShare.classList.remove('done');
-
-  // daily: check if already claimed today
-  const lastDaily = localStorage.getItem(KEY.dailyLast);
-  if(lastDaily === todayStr()){ elDaily.classList.add('done'); } else elDaily.classList.remove('done');
-
-  // disable buttons if done
-  Array.from(document.querySelectorAll('#taskList .task')).forEach(task=>{
-    const btn = task.querySelector('button.btn.primary');
-    if(!btn) return;
-    if(task.classList.contains('done')) btn.disabled = true; else btn.disabled = false;
-  });
+function addToUser(u, amt){
+  if(!u || amt<=0) return;
+  ensureUserRec(u);
+  const key = APP_KEY + "_" + u;
+  const rec = JSON.parse(localStorage.getItem(key));
+  rec.balance = (rec.balance||0) + amt;
+  rec.lastSeen = Date.now();
+  localStorage.setItem(key, JSON.stringify(rec));
+  updateLeaderboard(rec);
 }
 
-/* Claim generic task (demo-trust model) */
-function claimTask(id, reward){
-  if(!tasksState[id]){
-    // mark claimed
-    tasksState[id] = {claimedAt: new Date().toISOString(), reward};
-    coins += reward;
-    addHistory(`Task ${id} claimed → +${reward} ₿`);
-    saveAll(); renderAll();
-    alert(`Task completed! +${reward} ₿ credited.`);
-  } else {
-    alert('આ ટાસ્ક પહેલેથી જ ક્લેઈમ થઈ ચુકી છે.');
+/* ---------------------------
+   Leaderboard (local)
+   --------------------------- */
+function loadLB(){ return JSON.parse(localStorage.getItem(LB_KEY) || "[]"); }
+function saveLB(lb){ localStorage.setItem(LB_KEY, JSON.stringify(lb)); }
+function updateLeaderboard(rec){
+  let lb = loadLB();
+  lb = lb.filter(x => x.username !== rec.username);
+  lb.push({username: rec.username, balance: rec.balance||0});
+  lb.sort((a,b)=>b.balance - a.balance);
+  lb = lb.slice(0,50);
+  saveLB(lb);
+}
+
+/* ---------------------------
+   Referral link & render
+   --------------------------- */
+function myBotLink(){ return `https://t.me/Bytescoin_robot?start=${encodeURIComponent(state.username)}`; }
+function renderAll(){
+  document.getElementById("balance").innerText = Math.floor(state.balance);
+  document.getElementById("energy").innerText = state.energy;
+  document.getElementById("streak").innerText = state.streak;
+  document.getElementById("refBox").innerText = myBotLink();
+  document.getElementById("myRefBox").innerText = myBotLink();
+  document.getElementById("uname").innerText = state.username;
+  document.getElementById("uprofileBal").innerText = Math.floor(state.balance);
+  document.getElementById("urefcount").innerText = state.referrals.length || 0;
+  // refs list
+  const myRefsEl = document.getElementById("myRefs");
+  if(state.referrals.length){
+    myRefsEl.innerHTML = state.referrals.map(r=>`<div style="padding:6px 0">${r.code} • ${new Date(r.date).toLocaleDateString()}</div>`).join("");
+  } else myRefsEl.innerHTML = "<div class='small-muted'>No referrals yet</div>";
+  // leaderboard
+  const lb = loadLB();
+  const lbEl = document.getElementById("leaderboard");
+  lbEl.innerHTML = lb.length ? lb.map((r,i)=>`<li style="padding:6px 0;display:flex;justify-content:space-between"><div><strong>#${i+1}</strong> ${r.username}</div><div>${r.balance} BYTE</div></li>`).join("") : "<li class='small-muted'>No entries yet</li>";
+  saveState();
+}
+
+/* ---------------------------
+   Tap action
+   --------------------------- */
+function tap(){
+  if(state.energy <= 0){ alert("No energy left — claim daily bonus to refill."); return; }
+  // base reward = 1
+  let mult = 1;
+  if(state.boostUntil && Date.now() < state.boostUntil) mult = 2;
+  if(state.streak >= 7) mult += 0.5; // small streak bonus
+  const amt = Math.max(1, Math.round(1 * mult));
+  state.balance += amt;
+  state.energy -= 1;
+  // achievements counter
+  state.taps = (state.taps||0) + 1;
+  // distribute referral passive rewards
+  distributeReferralRewards(amt);
+  saveState(); renderAll();
+  registerLocalUser(); // update local ledger
+}
+function distributeReferralRewards(amt){
+  if(!state.refBy) return;
+  // L1 20%
+  addToUser(state.refBy, Math.floor(amt * 0.20));
+  // L2
+  const r1 = getRefOf(state.refBy);
+  if(r1) addToUser(r1, Math.floor(amt * 0.10));
+  // L3
+  const r2 = getRefOf(r1);
+  if(r2) addToUser(r2, Math.floor(amt * 0.05));
+}
+
+/* read 'refBy' for another user from local ledger */
+function getRefOf(username){
+  const key = APP_KEY + "_" + username;
+  if(!localStorage.getItem(key)) return null;
+  try{ const rec = JSON.parse(localStorage.getItem(key)); return rec.refBy || null; }catch(e){return null}
+}
+
+/* ---------------------------
+   Referral application (by code or URL)
+   --------------------------- */
+function applyReferral(code){
+  if(!code) { alert("Enter referral code"); return; }
+  if(code === state.username){ alert("Cannot use your own code"); return; }
+  if(state.refBy){ alert("Referral already applied"); return; }
+  // set ref relationship on referrer record
+  ensureUserRec(code);
+  const key = APP_KEY + "_" + code;
+  const rec = JSON.parse(localStorage.getItem(key));
+  rec.referrals = rec.referrals || [];
+  rec.referrals.push(state.username);
+  localStorage.setItem(key, JSON.stringify(rec));
+  // set our refBy
+  state.refBy = code;
+  state.referrals.push({code, date: Date.now()});
+  // immediate sign-up bonuses to referrer and their chain
+  addToUser(code, 200); // L1 sign-up
+  const r1 = getRefOf(code); if(r1) addToUser(r1, 100);
+  const r2 = getRefOf(r1); if(r2) addToUser(r2, 50);
+  saveState(); renderAll();
+  alert("Referral applied — referrer rewarded!");
+}
+
+/* ---------------------------
+   Process URL referral param (ref or start)
+   --------------------------- */
+function processUrlRef(){
+  const p = new URLSearchParams(window.location.search);
+  const r = p.get("ref") || p.get("start");
+  if(r && r !== state.username && !state.refBy){
+    applyReferral(r);
   }
 }
 
-/* Task share buttons (for UX) */
-document.getElementById('taskShareTG').addEventListener('click', ()=>{
-  const link = window.location.origin + window.location.pathname + '?ref=' + userId;
-  const text = `Join ByteCoin Auto Mining! Use my referral: ${link} — get +100 ₿ instantly.`;
-  window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`, '_blank');
+/* ---------------------------
+   Share / Copy / Join Channel
+   --------------------------- */
+document.getElementById("copyRef").addEventListener("click", async ()=>{
+  const txt = myBotLink();
+  try{ await navigator.clipboard.writeText(txt); alert("Referral link copied!"); }
+  catch(e){ alert("Copy failed — please copy manually: " + txt); }
 });
-document.getElementById('taskShareWA').addEventListener('click', ()=>{
-  const link = window.location.origin + window.location.pathname + '?ref=' + userId;
-  const text = `Join ByteCoin Auto Mining! Use my referral: ${link} — get +100 ₿ instantly.`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+document.getElementById("tgRef").addEventListener("click", ()=>{
+  const u = encodeURIComponent(myBotLink());
+  window.open(`https://t.me/share/url?url=${u}`,"_blank");
+});
+document.getElementById("waRef").addEventListener("click", ()=>{
+  const text = encodeURIComponent("Join BYTE Coin & earn: " + myBotLink());
+  window.open(`https://api.whatsapp.com/send?text=${text}`,"_blank");
+});
+document.getElementById("joinChan").addEventListener("click", ()=>{
+  if(state.joinedChannel){ alert("You've already claimed channel bonus."); return; }
+  // open channel
+  window.open("https://t.me/bytecoinS22m","_blank");
+  // award 1000 BYTE (local)
+  state.balance += 1000;
+  state.joinedChannel = true;
+  saveState(); renderAll();
+  alert("🎉 Channel join reward: +1000 BYTE added!");
 });
 
-/* Daily check-in claim */
-function claimDailyCheckin(){
-  const last = localStorage.getItem(KEY.dailyLast);
-  const today = todayStr();
-  if(last === today){
-    alert('આજે તમે પહેલેથી જ ચેક-ઇનની ક્લેઇમ કરી છે.');
-    return;
-  }
-  // award
-  const reward = 50;
-  coins += reward;
-  localStorage.setItem(KEY.dailyLast, today);
-  addHistory(`Daily check-in → +${reward} ₿`);
-  saveAll(); renderAll();
-  alert(`Daily check-in claimed! +${reward} ₿`);
+/* ---------------------------
+   Spin (simple) & Boost
+   --------------------------- */
+document.getElementById("spinBtn").addEventListener("click", ()=>{
+  const today = new Date().toDateString();
+  const spinsToday = state.spins.filter(s=> new Date(s).toDateString() === today).length;
+  if(spinsToday >= 1 && !confirm("Today's free spin used. Spin again?")) return;
+  const outcomes = [{v:5,w:40},{v:20,w:30},{v:50,w:18},{v:200,w:8},{v:500,w:4}];
+  let total = outcomes.reduce((s,o)=>s+o.w,0);
+  let pick = Math.random()*total;
+  let chosen = outcomes.find(o => (pick -= o.w) <= 0);
+  if(!chosen) chosen = outcomes[0];
+  state.balance += chosen.v;
+  state.spins.push(Date.now());
+  saveState(); renderAll();
+  alert(`🎉 You won ${chosen.v} BYTE`);
+});
+document.getElementById("boostBtn").addEventListener("click", ()=>{
+  if(confirm("Activate boost (2x) for 10 minutes?")){ state.boostUntil = Date.now() + 10*60*1000; saveState(); renderAll(); alert("Boost active for 10 minutes"); }
+});
+document.getElementById("shareBtn").addEventListener("click", ()=>{
+  const url = myBotLink();
+  const txt = `Join me on BYTE Coin — Tap & Earn: ${url}`;
+  if(navigator.share){ navigator.share({title:"BYTE Coin", text:txt, url}); }
+  else { navigator.clipboard.writeText(txt); alert("Share text copied!"); }
+  // reward small boost for sharing
+  state.boostUntil = Date.now() + 5*60*1000; saveState(); renderAll();
+});
+
+/* ---------------------------
+   Export data
+   --------------------------- */
+document.getElementById("exportBtn").addEventListener("click", ()=>{
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "byte_state.json"; document.body.appendChild(a); a.click(); a.remove();
+});
+
+/* ---------------------------
+   Register local ledger entry for current user
+   --------------------------- */
+function registerLocalUser(){
+  const key = APP_KEY + "_" + state.username;
+  const rec = JSON.parse(localStorage.getItem(key)) || {username:state.username, balance:0, refBy: state.refBy, referrals: state.referrals || [], lastSeen:Date.now()};
+  rec.balance = state.balance;
+  rec.refBy = state.refBy;
+  rec.referrals = rec.referrals || [];
+  localStorage.setItem(key, JSON.stringify(rec));
+  updateLeaderboard(rec);
 }
 
-/* Restore tasks UI from localStorage on load */
-(function restoreTasksOnLoad(){
-  const raw = localStorage.getItem(KEY.tasks);
-  if(raw) {
-    try { tasksState = JSON.parse(raw); } catch(e){ tasksState = {}; }
-  } else tasksState = {};
-  // ensure UI reflects state after a small delay (after DOM ready)
-  setTimeout(()=> renderTasksUI(), 250);
-})();
+/* ---------------------------
+   Navigation
+   --------------------------- */
+function navTo(page){
+  document.querySelectorAll("section").forEach(s=>s.style.display = "none");
+  document.querySelectorAll(".menu button").forEach(b=>b.classList.remove("active"));
+  if(page==="home"){ document.getElementById("home").style.display = "block"; document.getElementById("nav-home").classList.add("active"); }
+  if(page==="ref"){ document.getElementById("ref").style.display = "block"; document.getElementById("nav-tap").classList.add("active"); }
+  if(page==="profile"){ document.getElementById("profile").style.display = "block"; document.getElementById("nav-ref").classList.add("active"); }
+  if(page==="white"){ document.getElementById("white").style.display = "block"; document.getElementById("nav-prof").classList.add("active"); }
+  renderAll();
+}
+
+/* apply referral from input */
+document.getElementById("applyBtn").addEventListener("click", ()=>{
+  const code = document.getElementById("applyInput").value.trim();
+  if(!code) return alert("Enter code");
+  applyReferral(code);
+});
+
+/* coin tap */
+document.getElementById("coin").addEventListener("click", ()=>{ tap(); });
+
+/* connect wallet button */
+document.getElementById("connectWallet").addEventListener("click", ()=>{ window.open("https://t.me/wallet","_blank"); });
+
+/* init start */
+init();
+renderAll();
+registerLocalUser();
+navTo('home');
 </script>
 </body>
 </html>
